@@ -47,8 +47,8 @@ class IntCode():
         # self.print_table()
 
         while opstring != "00099":
-            print(f"{self.cur_index=}")
-            print(f"{self.data[self.cur_index]=}")
+            self._logger.debug(f"{self.cur_index=}")
+            self._logger.debug(f"{self.data[self.cur_index]=}")
             opstring = sanitize_opcode(self.data[self.cur_index])
             opcode = int(opstring[-1:])
 
@@ -102,7 +102,7 @@ class IntCode():
                 """Opcode 8 is equals: if the first parameter is equal to the second parameter, it
                 stores 1 in the position given by the third parameter. Otherwise, it stores 0."""
                 self.equals(opstring)
-            print()
+            self._logger.debug("")
             # self._logger.debug(self.data)
             # self.print_table()
         return self.data[0]
@@ -134,7 +134,7 @@ class IntCode():
         param1_val = int(self.get_desired_index(param1, param1_mode))
         param2_val = int(self.get_desired_index(param2, param2_mode))
 
-        print(f"add {self.cur_index=} {param1=} {param2=} {param3=} {param1_mode=} {param2_mode} {param1_val=} {param2_val=}")
+        self._logger.debug(f"add {self.cur_index=} {param1=} {param2=} {param3=} {param1_mode=} {param2_mode} {param1_val=} {param2_val=}")
 
         self.data[param3] = param1_val + param2_val
         self.increment_index(4)
@@ -150,7 +150,7 @@ class IntCode():
         param1_val = int(self.get_desired_index(param1, param1_mode))
         param2_val = int(self.get_desired_index(param2, param2_mode))
 
-        print(f"mult {self.cur_index=} {param1=} {param2=} {param3=} {param1_mode=} {param2_mode} {param1_val=} {param2_val=}")
+        self._logger.debug(f"mult {self.cur_index=} {param1=} {param2=} {param3=} {param1_mode=} {param2_mode} {param1_val=} {param2_val=}")
 
         self.data[param3] = param1_val * param2_val
         self.increment_index(4)
@@ -158,7 +158,7 @@ class IntCode():
     def input(self):
         param1 = self.get_value_from_data(self.cur_index + 1)
 
-        print(f"input {self.cur_index=} {param1=}")
+        self._logger.debug(f"input {self.cur_index=} {param1=}")
 
         self.data[param1] = self.system_id
         self.increment_index(2)
@@ -168,7 +168,7 @@ class IntCode():
         param1_mode = int(opstring[2])
         param1_val = int(self.get_desired_index(param1, param1_mode))
 
-        print(f"output {self.cur_index=} {param1=} {param1_mode=} {param1_val=}")
+        self._logger.debug(f"output {self.cur_index=} {param1=} {param1_mode=} {param1_val=}")
 
         self.result_history.append(param1_val)
         self.increment_index(2)
@@ -178,14 +178,14 @@ class IntCode():
         param1_mode = int(opstring[2])
         param1_val = int(self.get_desired_index(param1, param1_mode))
 
-        print(f"jt p1 {self.cur_index=} {param1=} {param1_mode=} {param1_val=}")
+        self._logger.debug(f"jt p1 {self.cur_index=} {param1=} {param1_mode=} {param1_val=}")
 
         if param1_val != 0:
             param2 = self.get_value_from_data(self.cur_index + 2)
             param2_mode = int(opstring[1])
             param2_val = int(self.get_desired_index(param2, param2_mode))
 
-            print(f"jt p2 {self.cur_index=} {param2=} {param2_mode=} {param2_val=}")
+            self._logger.debug(f"jt p2 {self.cur_index=} {param2=} {param2_mode=} {param2_val=}")
 
             self.cur_index = param2_val
         else:
@@ -196,14 +196,14 @@ class IntCode():
         param1_mode = int(opstring[2])
         param1_val = int(self.get_desired_index(param1, param1_mode))
 
-        print(f"jf p1 {self.cur_index=} {param1=} {param1_mode=} {param1_val=}")
+        self._logger.debug(f"jf p1 {self.cur_index=} {param1=} {param1_mode=} {param1_val=}")
 
         if param1_val == 0:
             param2 = self.get_value_from_data(self.cur_index + 2)
             param2_mode = int(opstring[1])
             param2_val = int(self.get_desired_index(param2, param2_mode))
 
-            print(f"jf p2 {self.cur_index=} {param2=} {param2_mode=} {param2_val=}")
+            self._logger.debug(f"jf p2 {self.cur_index=} {param2=} {param2_mode=} {param2_val=}")
 
             self.cur_index = param2_val
         else:
@@ -221,7 +221,7 @@ class IntCode():
 
         param3 = self.get_value_from_data(self.cur_index + 3)
 
-        print(f"lt {self.cur_index=} {param1=} {param2=} {param3=} {param1_mode=} {param2_mode} {param1_val=} {param2_val=}")
+        self._logger.debug(f"lt {self.cur_index=} {param1=} {param2=} {param3=} {param1_mode=} {param2_mode} {param1_val=} {param2_val=}")
 
         if param1_val < param2_val:
             self.data[param3] = 1
@@ -240,7 +240,7 @@ class IntCode():
 
         param3 = self.get_value_from_data(self.cur_index + 3)
 
-        print(f"eq {self.cur_index=} {param1=} {param2=} {param3=} {param1_mode=} {param2_mode} {param1_val=} {param2_val=}")
+        self._logger.debug(f"eq {self.cur_index=} {param1=} {param2=} {param3=} {param1_mode=} {param2_mode} {param1_val=} {param2_val=}")
 
         if param1_val == param2_val:
             self.data[param3] = 1

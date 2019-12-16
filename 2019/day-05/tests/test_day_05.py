@@ -15,7 +15,7 @@ def test_d2(input_file, expected_result):
     intcode.get_input(input_file)
     assert intcode.diagnostic_program(1) == expected_result
 
-def test_d5():
+def test_d5p1():
     intcode = main.IntCode()
     intcode.get_input("tests/data/input_d5")
     intcode.diagnostic_program(1)
@@ -26,3 +26,9 @@ def test_d5_examples():
     intcode.data = [3, 12, 6, 12, 15, 1, 13, 14, 13, 4, 13, 99, -1, 0, 1, 9]
     intcode.diagnostic_program(0)
     assert intcode.result == 0
+
+def test_d5p2():
+    intcode = main.IntCode()
+    intcode.get_input("tests/data/input")
+    intcode.diagnostic_program(5)
+    assert intcode.result == 9386583
