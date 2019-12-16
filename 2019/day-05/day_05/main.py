@@ -1,162 +1,263 @@
-import sys
+import logging
+import pdb
+
+logging.basicConfig(level=logging.CRITICAL)
 
 
 def part1():
-    test = Test()
-    test.diagnostic_program()
+    test = IntCode()
+    test.get_input("input")
+    test.diagnostic_program(1)
 
 
 def part2():
-    print("part2")
-    pass
+    test = IntCode()
+    test.get_input("input")
+    test.diagnostic_program(5)
+    print(test.result)
 
 
 def sanitize_opcode(val):
     return str(val).zfill(5)
 
 
-def get_input(input_file):
-    with open(input_file, 'r') as fh:
-        line = fh.readline().strip('\n')
-        return [int(value) for value in line.split(",")]
-
-
-def get_user_input():
-    return int(input("Please enter the system id:"))
-
-
-class Test():
+class IntCode():
     def __init__(self):
+        self._logger = logging.getLogger(__name__)
         self.cur_index = 0
-        self.data = get_input("input")
+        self.system_id = 0
+        self.data = []
+        self.result_history = []
 
-    def diagnostic_program(self):
-        self.system_id = int(get_user_input())
-        opcode = ""
+    @property
+    def result(self):
+        return self.result_history[-1]
 
-        while opcode != "00099":
-            opcode = sanitize_opcode(self.data[self.cur_index])
-            op_val = int(opcode[-2:])
-            param_1_mode = int(opcode[2])
-            param_2_mode = int(opcode[1])
-            # print(f"{self.cur_index} {opcode} {op_val=} {param_1_mode=} {param_2_mode=}")
-            if op_val == 1:
-                if param_1_mode == 0: # position mode
-                    num1_pos = self.data[self.cur_index + 1]
-                    num1_val = self.data[num1_pos]
-                    # print(f"{self.data[num1_pos]=}")
-                else: # immediate mode
-                    num1_val = self.data[self.cur_index + 1]
+    def get_input(self, input_file):
+        with open(input_file, 'r') as fh:
+            line = fh.readline().strip('\n')
+            self.data = [int(value) for value in line.split(",")]
 
-                if param_2_mode == 0: # position mode
-                    num2_pos = self.data[self.cur_index + 2]
-                    num2_val = self.data[num2_pos]
-                else: # immediate mode
-                    num2_val = self.data[self.cur_index + 2]
+    def diagnostic_program(self, user_input):
+        self.system_id = user_input
+        opstring = ""
+
+        # self._logger.debug(self.data)
+        # self.print_table_header()
+        # self.print_table()
+
+        while opstring != "00099":
+            print(f"{self.cur_index=}")
+            print(f"{self.data[self.cur_index]=}")
+            opstring = sanitize_opcode(self.data[self.cur_index])
+            opcode = int(opstring[-1:])
+
+            if opcode == 1:
+                """Opcode 1 adds together numbers read from two positions and stores the result in a
+                third position. The three integers immediately after the opcode tell you these three
+                positions - the first two indicate the positions from which you should read the
+                input values, and the third indicates the position at which the output should be
+                stored.
+                For example, if your Intcode computer encounters 1,10,20,30, it should read the
+                values at positions 10 and 20, add those values, and then overwrite the value at
+                position 30 with their sum."""
+                self.addition(opstring)
+
+            elif opcode == 2:
+                """Opcode 2 works exactly like opcode 1, except it multiplies the two inputs instead
+                of adding them. Again, the three integers after the opcode indicate where the inputs
+                and outputs are, not their values."""
+                self.multiplication(opstring)
+
+            elif opcode == 3:
+                """Opcode 3 takes a single integer as input and saves it to the
+                   position given by its only parameter.
+                   For example, the instruction 3,50 would take an input value and store it at
+                   address 50."""
+                self.input()
+
+            elif opcode == 4:
+                """Opcode 4 outputs the value of its only parameter.
+                For example, the instruction 4,50 would output the value at address 50."""
+                self.output(opstring)
+
+            elif opcode == 5:
+                """Opcode 5 is jump-if-true: if the first parameter is non-zero, it sets the
+                instruction pointer to the value from the second parameter. Otherwise, it does
+                nothing."""
+                self.jump_if_true(opstring)
+
+            elif opcode == 6:
+                """Opcode 6 is jump-if-false: if the first parameter is zero, it sets the
+                instruction pointer to the value from the second parameter. Otherwise, it does
+                nothing."""
+                self.jump_if_false(opstring)
+
+            elif opcode == 7:
+                """Opcode 7 is less than: if the first parameter is less than the second parameter,
+                it stores 1 in the position given by the third parameter. Otherwise, it stores 0."""
+                self.less_than(opstring)
+
+            elif opcode == 8:
+                """Opcode 8 is equals: if the first parameter is equal to the second parameter, it
+                stores 1 in the position given by the third parameter. Otherwise, it stores 0."""
+                self.equals(opstring)
+            print()
+            # self._logger.debug(self.data)
+            # self.print_table()
+        return self.data[0]
+
+    def get_value_from_data(self, index_val):
+        if index_val < len(self.data) - 1:
+            return int(self.data[index_val])
+        else:
+            return None
+
+    def get_desired_index(self, param, mode):
+        if mode == 0:
+            return self.data[param]
+        if mode == 1:
+            return param
+        raise Exception
+
+    def increment_index(self, value):
+        self.cur_index += value
+
+    def addition(self, opstring):
+        param1 = self.get_value_from_data(self.cur_index + 1)
+        param2 = self.get_value_from_data(self.cur_index + 2)
+        param3 = self.get_value_from_data(self.cur_index + 3)
+
+        param1_mode = int(opstring[2])
+        param2_mode = int(opstring[1])
+
+        param1_val = int(self.get_desired_index(param1, param1_mode))
+        param2_val = int(self.get_desired_index(param2, param2_mode))
+
+        print(f"add {self.cur_index=} {param1=} {param2=} {param3=} {param1_mode=} {param2_mode} {param1_val=} {param2_val=}")
+
+        self.data[param3] = param1_val + param2_val
+        self.increment_index(4)
+
+    def multiplication(self, opstring):
+        param1 = self.get_value_from_data(self.cur_index + 1)
+        param2 = self.get_value_from_data(self.cur_index + 2)
+        param3 = self.get_value_from_data(self.cur_index + 3)
+
+        param1_mode = int(opstring[2])
+        param2_mode = int(opstring[1])
+
+        param1_val = int(self.get_desired_index(param1, param1_mode))
+        param2_val = int(self.get_desired_index(param2, param2_mode))
+
+        print(f"mult {self.cur_index=} {param1=} {param2=} {param3=} {param1_mode=} {param2_mode} {param1_val=} {param2_val=}")
+
+        self.data[param3] = param1_val * param2_val
+        self.increment_index(4)
+
+    def input(self):
+        param1 = self.get_value_from_data(self.cur_index + 1)
+
+        print(f"input {self.cur_index=} {param1=}")
+
+        self.data[param1] = self.system_id
+        self.increment_index(2)
+
+    def output(self, opstring):
+        param1 = self.get_value_from_data(self.cur_index + 1)
+        param1_mode = int(opstring[2])
+        param1_val = int(self.get_desired_index(param1, param1_mode))
+
+        print(f"output {self.cur_index=} {param1=} {param1_mode=} {param1_val=}")
+
+        self.result_history.append(param1_val)
+        self.increment_index(2)
+
+    def jump_if_true(self, opstring):
+        param1 = self.get_value_from_data(self.cur_index + 1)
+        param1_mode = int(opstring[2])
+        param1_val = int(self.get_desired_index(param1, param1_mode))
+
+        print(f"jt p1 {self.cur_index=} {param1=} {param1_mode=} {param1_val=}")
+
+        if param1_val != 0:
+            param2 = self.get_value_from_data(self.cur_index + 2)
+            param2_mode = int(opstring[1])
+            param2_val = int(self.get_desired_index(param2, param2_mode))
+
+            print(f"jt p2 {self.cur_index=} {param2=} {param2_mode=} {param2_val=}")
+
+            self.cur_index = param2_val
+        else:
+            self.increment_index(3)
+
+    def jump_if_false(self, opstring):
+        param1 = self.get_value_from_data(self.cur_index + 1)
+        param1_mode = int(opstring[2])
+        param1_val = int(self.get_desired_index(param1, param1_mode))
+
+        print(f"jf p1 {self.cur_index=} {param1=} {param1_mode=} {param1_val=}")
+
+        if param1_val == 0:
+            param2 = self.get_value_from_data(self.cur_index + 2)
+            param2_mode = int(opstring[1])
+            param2_val = int(self.get_desired_index(param2, param2_mode))
+
+            print(f"jf p2 {self.cur_index=} {param2=} {param2_mode=} {param2_val=}")
+
+            self.cur_index = param2_val
+        else:
+            self.increment_index(3)
 
 
-                dest_pos = self.data[self.cur_index + 3]
-                self.addition(int(num1_val), int(num2_val), int(dest_pos))
+    def less_than(self, opstring):
+        param1 = self.get_value_from_data(self.cur_index + 1)
+        param1_mode = int(opstring[2])
+        param1_val = int(self.get_desired_index(param1, param1_mode))
 
-            elif op_val == 2:
-                if param_1_mode == 0: # position mode
-                    num1_pos = self.data[self.cur_index + 1]
-                    num1_val = self.data[num1_pos]
-                else: # immediate mode
-                    num1_val = self.data[self.cur_index + 1]
+        param2 = self.get_value_from_data(self.cur_index + 2)
+        param2_mode = int(opstring[1])
+        param2_val = int(self.get_desired_index(param2, param2_mode))
 
-                if param_2_mode == 0: # position mode
-                    num2_pos = self.data[self.cur_index + 2]
-                    num2_val = self.data[num2_pos]
-                else: # immediate mode
-                    num2_val = self.data[self.cur_index + 2]
+        param3 = self.get_value_from_data(self.cur_index + 3)
 
+        print(f"lt {self.cur_index=} {param1=} {param2=} {param3=} {param1_mode=} {param2_mode} {param1_val=} {param2_val=}")
 
-                dest_pos = self.data[self.cur_index + 3]
-                self.multiplication(int(num1_val), int(num2_val), int(dest_pos))
-
-            elif op_val == 3:
-                dest_pos = self.data[self.cur_index + 1]
-                self.replacement(int(dest_pos))
-
-            elif op_val == 4:
-                if param_1_mode == 0: # position mode
-                    num1_pos = self.data[self.cur_index + 1]
-                    num1_val = self.data[num1_pos]
-                else: # immediate mode
-                    num1_val = self.data[self.cur_index + 1]
-
-                self.output(int(num1_val))
-
-            elif op_val == 5:
-                param_1 = self.data[self.cur_index + 1]
-                param_2 = self.data[self.cur_index + 2]
-                self.jump_if_true(param_1, param_2)
-
-            elif op_val == 6:
-                pass
-
-            elif op_val == 7:
-                pass
-
-            elif op_val == 8:
-                pass
-
-
-    def get_next_index(opcode):
-        pass
-
-    def get_operation(self, opcode):
-        op_val = int(opcode[-2:])
-        # print(op_val)
-        switcher = {
-            1: self.addition(),
-            2: self.multiplication(),
-            3: self.replacement(),
-            4: self.output(),
-        }
-
-        return switcher.get(op_val)
-
-    def addition(self, num1, num2, dest_pos):
-        # print(f"addition: {num1=} {num2=} {dest_pos=}")
-        self.data[dest_pos] = num1 + num2
-        self.cur_index += 4
-        return "addition"
-
-    def multiplication(self, num1, num2, dest_pos):
-        # print(f"multiplication: {num1=} {num2=} {dest_pos=}")
-        self.data[dest_pos] = num1 * num2
-        self.cur_index += 4
-        return "multiplication"
-
-    def replacement(self, dest_pos):
-        # print(f"replacement: {self.system_id=} {dest_pos=}")
-        self.data[dest_pos] = self.system_id
-        self.cur_index += 2
-        return "replacement"
-
-    def jump_if_true(self, param1, param2):
-        if param1 != 0:
-            self.cur_index = self.data[param2]
-
-    def jump_if_false(self, param1, param2):
-        if param1 == 0:
-            self.cur_index = self.data[param2]
-
-    def less_than(self, param1, param2, param3):
-        if param1 < param2:
+        if param1_val < param2_val:
             self.data[param3] = 1
         else:
             self.data[param3] = 0
+        self.increment_index(4)
 
-    def equals(self, param1, param2, param3):
-        if param1 == param2:
+    def equals(self, opstring):
+        param1 = self.get_value_from_data(self.cur_index + 1)
+        param1_mode = int(opstring[2])
+        param1_val = int(self.get_desired_index(param1, param1_mode))
+
+        param2 = self.get_value_from_data(self.cur_index + 2)
+        param2_mode = int(opstring[1])
+        param2_val = int(self.get_desired_index(param2, param2_mode))
+
+        param3 = self.get_value_from_data(self.cur_index + 3)
+
+        print(f"eq {self.cur_index=} {param1=} {param2=} {param3=} {param1_mode=} {param2_mode} {param1_val=} {param2_val=}")
+
+        if param1_val == param2_val:
             self.data[param3] = 1
         else:
             self.data[param3] = 0
+        self.increment_index(4)
 
-    def output(self, num1):
-        print(num1)
-        self.cur_index += 2
-        return "output"
+    def print_table_header(self):
+        print("i".rjust(4), end=" | ")
+        count = 5
+        for i in range(len(self.data)):
+            print(str(i).rjust(4), end=" | ")
+            count += 6
+        print("\n"+"="*count)
+
+    def print_table(self):
+        print(str(self.cur_index).rjust(3), end=" | ")
+        for i in self.data:
+            print(str(i).rjust(4), end=" | ")
+        print()
