@@ -3,17 +3,17 @@ import pytest
 
 
 @pytest.mark.parametrize(
-    ("input_file", "expected_result"),
+    ("input_file", "user_input", "expected_result"),
     [
-        ("tests/data/day_02_ex_1", 3500),
-        ("tests/data/day_02_input", 5866714),
-        ("tests/data/day_02_input_part2", 19690720)
+        ("tests/data/day_02_ex_1", 1, 3500),
+        ("tests/data/day_02_input", 1, 5866714),
+        ("tests/data/day_02_input_part2", 0, 19690720)
     ]
 )
-def test_d2(input_file, expected_result):
+def test_d2(input_file, user_input, expected_result):
     intcode = main.IntCode()
     intcode.get_input(input_file)
-    assert intcode.diagnostic_program(1) == expected_result
+    assert intcode.diagnostic_program(user_input) == expected_result
 
 def test_d5p1():
     intcode = main.IntCode()
