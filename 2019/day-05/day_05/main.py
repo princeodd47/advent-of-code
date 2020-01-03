@@ -1,6 +1,9 @@
 import logging
 import pdb
 
+from param_mode import ParamMode
+
+
 logging.basicConfig(level=logging.DEBUG)
 
 
@@ -75,32 +78,36 @@ class IntCode():
         else:
             return None
 
-    def _get_desired_index(self, param, mode):
-        if mode == 0:
+    def _get_value(self, param, mode):
+        if mode == ParamMode.POSITION:
             return self.data[param]
-        if mode == 1:
+        if mode == ParamMode.IMMEDIATE:
             return param
         raise Exception
+
+    def _get_value_2(self, param, mode, is_dest):
+        param = int(param)
+        mode = int(mode)
+        if mode == ParamMode.IMMEDIATE or is_dest:
+            return param
+        if mode == ParamMode.POSITION:
+            return int(self.data[param])
+        raise Exception(f"{mode=}")
 
     def _increment_index(self, value):
         self._cur_index += value
 
-    def _get_parameters(self, opstring, num_of_params, dest_index=None):
+    def _get_parameters(self, opstring="00001", num_of_params=3, dest=2):
         self._logger.debug(f"{self._cur_index=}")
-        self._logger.debug(f"{opstring=} {num_of_params=} {dest_index=}")
+        self._logger.debug(f"{opstring=} {num_of_params=} {dest=}")
+        mode_string = opstring[:-2] # 000
         parameters = []
         for i in range(num_of_params):
             self._logger.debug(f"{i=}")
-            if self._cur_index + i == dest_index:
-                parameters.append(self.data[dest_index])
-            else:
-                parameter = self._get_value_from_data(self._cur_index + i)
-                self._logger.debug(f"{parameter=}")
-                parameter_mode = int(opstring[self._cur_index-(i+1)])
-                self._logger.debug(f"{parameter_mode=}")
-                parameter_val = int(self._get_desired_index(parameter, parameter_mode))
-                self._logger.debug(f"{parameter_val=}")
-                parameters.append(parameter_val)
+            parameter_mode = mode_string[-1 - i]
+            parameter = self.data[self._cur_index + i + 1]
+            parameter_val = self._get_value_2(parameter, parameter_mode, i == dest)
+            parameters.append(parameter_val)
 
         return tuple(parameters)
 
@@ -122,24 +129,8 @@ class IntCode():
         For example, if your Intcode computer encounters 1,10,20,30, it should read the
         values at positions 10 and 20, add those values, and then overwrite the value at
         position 30 with their sum."""
-        param1 = self._get_value_from_data(self._cur_index + 1)
-        param2 = self._get_value_from_data(self._cur_index + 2)
-        param3 = self._get_value_from_data(self._cur_index + 3)
-
-        param1_mode = int(opstring[2])
-        param2_mode = int(opstring[1])
-
-        param1_val = int(self._get_desired_index(param1, param1_mode))
-        param2_val = int(self._get_desired_index(param2, param2_mode))
-
-        self._logger.debug(f"add {self._cur_index=} {param1=} {param2=} {param3=} {param1_mode=} {param2_mode} {param1_val=} {param2_val=}")
-
-        self.data[param3] = param1_val + param2_val
-
-        # sanitized_opstring = self._sanitize_opstring(opstring, 3)
-        # parameters = self._get_parameters(sanitized_opstring, 3, self._cur_index+3)
-        # self._logger.debug(f"{parameters=}")
-        # self.data[parameters[2]] = parameters[0] + parameters[1]
+        parameters = self._get_parameters(opstring, 3, 2)
+        self.data[parameters[2]] = parameters[0] + parameters[1]
 
         self._increment_index(4)
 
@@ -154,10 +145,11 @@ class IntCode():
         param1_mode = int(opstring[2])
         param2_mode = int(opstring[1])
 
-        param1_val = int(self._get_desired_index(param1, param1_mode))
-        param2_val = int(self._get_desired_index(param2, param2_mode))
+        param1_val = int(self._get_value(param1, param1_mode))
+        param2_val = int(self._get_value(param2, param2_mode))
 
-        self._logger.debug(f"mult {self._cur_index=} {param1=} {param2=} {param3=} {param1_mode=} {param2_mode} {param1_val=} {param2_val=}")
+        self._logger.debug(f"mult {self._cur_index=} {param1=} {param2=} {param3=} {param1_mode=}"
+                           f"{param2_mode} {param1_val=} {param2_val=}")
 
         self.data[param3] = param1_val * param2_val
 
@@ -184,7 +176,7 @@ class IntCode():
         For example, the instruction 4,50 would output the value at address 50."""
         param1 = self._get_value_from_data(self._cur_index + 1)
         param1_mode = int(opstring[2])
-        param1_val = int(self._get_desired_index(param1, param1_mode))
+        param1_val = int(self._get_value(param1, param1_mode))
 
         self._logger.debug(f"output {self._cur_index=} {param1=} {param1_mode=} {param1_val=}")
 
@@ -197,14 +189,14 @@ class IntCode():
         nothing."""
         param1 = self._get_value_from_data(self._cur_index + 1)
         param1_mode = int(opstring[2])
-        param1_val = int(self._get_desired_index(param1, param1_mode))
+        param1_val = int(self._get_value(param1, param1_mode))
 
         self._logger.debug(f"jt p1 {self._cur_index=} {param1=} {param1_mode=} {param1_val=}")
 
         if param1_val != 0:
             param2 = self._get_value_from_data(self._cur_index + 2)
             param2_mode = int(opstring[1])
-            param2_val = int(self._get_desired_index(param2, param2_mode))
+            param2_val = int(self._get_value(param2, param2_mode))
 
             self._logger.debug(f"jt p2 {self._cur_index=} {param2=} {param2_mode=} {param2_val=}")
 
@@ -218,14 +210,14 @@ class IntCode():
         nothing."""
         param1 = self._get_value_from_data(self._cur_index + 1)
         param1_mode = int(opstring[2])
-        param1_val = int(self._get_desired_index(param1, param1_mode))
+        param1_val = int(self._get_value(param1, param1_mode))
 
         self._logger.debug(f"jf p1 {self._cur_index=} {param1=} {param1_mode=} {param1_val=}")
 
         if param1_val == 0:
             param2 = self._get_value_from_data(self._cur_index + 2)
             param2_mode = int(opstring[1])
-            param2_val = int(self._get_desired_index(param2, param2_mode))
+            param2_val = int(self._get_value(param2, param2_mode))
 
             self._logger.debug(f"jf p2 {self._cur_index=} {param2=} {param2_mode=} {param2_val=}")
 
@@ -238,15 +230,16 @@ class IntCode():
         it stores 1 in the position given by the third parameter. Otherwise, it stores 0."""
         param1 = self._get_value_from_data(self._cur_index + 1)
         param1_mode = int(opstring[2])
-        param1_val = int(self._get_desired_index(param1, param1_mode))
+        param1_val = int(self._get_value(param1, param1_mode))
 
         param2 = self._get_value_from_data(self._cur_index + 2)
         param2_mode = int(opstring[1])
-        param2_val = int(self._get_desired_index(param2, param2_mode))
+        param2_val = int(self._get_value(param2, param2_mode))
 
         param3 = self._get_value_from_data(self._cur_index + 3)
 
-        self._logger.debug(f"lt {self._cur_index=} {param1=} {param2=} {param3=} {param1_mode=} {param2_mode} {param1_val=} {param2_val=}")
+        self._logger.debug(f"lt {self._cur_index=} {param1=} {param2=} {param3=} {param1_mode=}"
+                           f"{param2_mode} {param1_val=} {param2_val=}")
 
         if param1_val < param2_val:
             self.data[param3] = 1
@@ -259,15 +252,16 @@ class IntCode():
         stores 1 in the position given by the third parameter. Otherwise, it stores 0."""
         param1 = self._get_value_from_data(self._cur_index + 1)
         param1_mode = int(opstring[2])
-        param1_val = int(self._get_desired_index(param1, param1_mode))
+        param1_val = int(self._get_value(param1, param1_mode))
 
         param2 = self._get_value_from_data(self._cur_index + 2)
         param2_mode = int(opstring[1])
-        param2_val = int(self._get_desired_index(param2, param2_mode))
+        param2_val = int(self._get_value(param2, param2_mode))
 
         param3 = self._get_value_from_data(self._cur_index + 3)
 
-        self._logger.debug(f"eq {self._cur_index=} {param1=} {param2=} {param3=} {param1_mode=} {param2_mode} {param1_val=} {param2_val=}")
+        self._logger.debug(f"eq {self._cur_index=} {param1=} {param2=} {param3=} {param1_mode=}"
+                           f"{param2_mode} {param1_val=} {param2_val=}")
 
         if param1_val == param2_val:
             self.data[param3] = 1
