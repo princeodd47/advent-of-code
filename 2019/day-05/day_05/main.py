@@ -100,7 +100,7 @@ class IntCode():
     def _get_parameters(self, opstring="00001", num_of_params=3, dest=2):
         self._logger.debug(f"{self._cur_index=}")
         self._logger.debug(f"{opstring=} {num_of_params=} {dest=}")
-        mode_string = opstring[:-2] # 000
+        mode_string = opstring[:-2]
         parameters = []
         for i in range(num_of_params):
             self._logger.debug(f"{i=}")
@@ -131,33 +131,14 @@ class IntCode():
         position 30 with their sum."""
         parameters = self._get_parameters(opstring, 3, 2)
         self.data[parameters[2]] = parameters[0] + parameters[1]
-
         self._increment_index(4)
 
     def _multiplication(self, opstring):
         """Opcode 2 works exactly like opcode 1, except it multiplies the two inputs instead
         of adding them. Again, the three integers after the opcode indicate where the inputs
         and outputs are, not their values."""
-        param1 = self._get_value_from_data(self._cur_index + 1)
-        param2 = self._get_value_from_data(self._cur_index + 2)
-        param3 = self._get_value_from_data(self._cur_index + 3)
-
-        param1_mode = int(opstring[2])
-        param2_mode = int(opstring[1])
-
-        param1_val = int(self._get_value(param1, param1_mode))
-        param2_val = int(self._get_value(param2, param2_mode))
-
-        self._logger.debug(f"mult {self._cur_index=} {param1=} {param2=} {param3=} {param1_mode=}"
-                           f"{param2_mode} {param1_val=} {param2_val=}")
-
-        self.data[param3] = param1_val * param2_val
-
-        # sanitized_opstring = self._sanitize_opstring(opstring, 3)
-        # parameters = self._get_parameters(sanitized_opstring, 3, self._cur_index+3)
-        # self._logger.debug(f"{parameters=}")
-        # self.data[parameters[2]] = parameters[0] + parameters[1]
-
+        parameters = self._get_parameters(opstring, 3, 2)
+        self.data[parameters[2]] = parameters[0] * parameters[1]
         self._increment_index(4)
 
     def _input(self, opstring):
@@ -165,10 +146,8 @@ class IntCode():
            position given by its only parameter.
            For example, the instruction 3,50 would take an input value and store it at
            address 50."""
-        param1 = self._get_value_from_data(self._cur_index + 1)
-        self._logger.debug(f"input {self._cur_index=} {param1=}")
-
-        self.data[param1] = self._system_id
+        parameters = self._get_parameters(opstring, 1, 0)
+        self.data[parameters[0]] = self._system_id
         self._increment_index(2)
 
     def _output(self, opstring):
@@ -181,6 +160,8 @@ class IntCode():
         self._logger.debug(f"output {self._cur_index=} {param1=} {param1_mode=} {param1_val=}")
 
         self.result_history.append(param1_val)
+        # parameters = self._get_parameters(opstring, 1, 0)
+        # self.result_history.append(parameters[1])
         self._increment_index(2)
 
     def _jump_if_true(self, opstring):
@@ -191,6 +172,7 @@ class IntCode():
         param1_mode = int(opstring[2])
         param1_val = int(self._get_value(param1, param1_mode))
 
+        parameters = self._get_parameters(opstring, 1, 0)
         self._logger.debug(f"jt p1 {self._cur_index=} {param1=} {param1_mode=} {param1_val=}")
 
         if param1_val != 0:
