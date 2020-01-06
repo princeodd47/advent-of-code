@@ -4,7 +4,7 @@ import pdb
 from param_mode import ParamMode
 
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.CRITICAL)
 
 
 def part1():
@@ -153,15 +153,8 @@ class IntCode():
     def _output(self, opstring):
         """Opcode 4 outputs the value of its only parameter.
         For example, the instruction 4,50 would output the value at address 50."""
-        param1 = self._get_value_from_data(self._cur_index + 1)
-        param1_mode = int(opstring[2])
-        param1_val = int(self._get_value(param1, param1_mode))
-
-        self._logger.debug(f"output {self._cur_index=} {param1=} {param1_mode=} {param1_val=}")
-
-        self.result_history.append(param1_val)
-        # parameters = self._get_parameters(opstring, 1, 0)
-        # self.result_history.append(parameters[1])
+        parameters = self._get_parameters(opstring, 1, None)
+        self.result_history.append(parameters[0])
         self._increment_index(2)
 
     def _jump_if_true(self, opstring):
@@ -172,7 +165,7 @@ class IntCode():
         param1_mode = int(opstring[2])
         param1_val = int(self._get_value(param1, param1_mode))
 
-        parameters = self._get_parameters(opstring, 1, 0)
+        parameters = self._get_parameters(opstring, 2, 1)
         self._logger.debug(f"jt p1 {self._cur_index=} {param1=} {param1_mode=} {param1_val=}")
 
         if param1_val != 0:
