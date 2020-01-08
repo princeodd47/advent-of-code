@@ -173,65 +173,31 @@ class IntCode():
         """Opcode 6 is jump-if-false: if the first parameter is zero, it sets the
         instruction pointer to the value from the second parameter. Otherwise, it does
         nothing."""
-        param1 = self._get_value_from_data(self._cur_index + 1)
-        param1_mode = int(opstring[2])
-        param1_val = int(self._get_value(param1, param1_mode))
-
-        self._logger.debug(f"jf p1 {self._cur_index=} {param1=} {param1_mode=} {param1_val=}")
-
-        if param1_val == 0:
-            param2 = self._get_value_from_data(self._cur_index + 2)
-            param2_mode = int(opstring[1])
-            param2_val = int(self._get_value(param2, param2_mode))
-
-            self._logger.debug(f"jf p2 {self._cur_index=} {param2=} {param2_mode=} {param2_val=}")
-
-            self._cur_index = param2_val
+        parameters = self._get_parameters(opstring, 2, None)
+        if parameters[0] == 0:
+            self._cur_index = parameters[1]
         else:
             self._increment_index(3)
+            self._logger.debug("JF incrementing index by 3")
 
     def _less_than(self, opstring):
         """Opcode 7 is less than: if the first parameter is less than the second parameter,
         it stores 1 in the position given by the third parameter. Otherwise, it stores 0."""
-        param1 = self._get_value_from_data(self._cur_index + 1)
-        param1_mode = int(opstring[2])
-        param1_val = int(self._get_value(param1, param1_mode))
-
-        param2 = self._get_value_from_data(self._cur_index + 2)
-        param2_mode = int(opstring[1])
-        param2_val = int(self._get_value(param2, param2_mode))
-
-        param3 = self._get_value_from_data(self._cur_index + 3)
-
-        self._logger.debug(f"lt {self._cur_index=} {param1=} {param2=} {param3=} {param1_mode=}"
-                           f"{param2_mode} {param1_val=} {param2_val=}")
-
-        if param1_val < param2_val:
-            self.data[param3] = 1
+        parameters = self._get_parameters(opstring, 3, 2)
+        if parameters[0] < parameters[1]:
+            self.data[parameters[2]] = 1
         else:
-            self.data[param3] = 0
+            self.data[parameters[2]] = 0
         self._increment_index(4)
 
     def _equals(self, opstring):
         """Opcode 8 is equals: if the first parameter is equal to the second parameter, it
         stores 1 in the position given by the third parameter. Otherwise, it stores 0."""
-        param1 = self._get_value_from_data(self._cur_index + 1)
-        param1_mode = int(opstring[2])
-        param1_val = int(self._get_value(param1, param1_mode))
-
-        param2 = self._get_value_from_data(self._cur_index + 2)
-        param2_mode = int(opstring[1])
-        param2_val = int(self._get_value(param2, param2_mode))
-
-        param3 = self._get_value_from_data(self._cur_index + 3)
-
-        self._logger.debug(f"eq {self._cur_index=} {param1=} {param2=} {param3=} {param1_mode=}"
-                           f"{param2_mode} {param1_val=} {param2_val=}")
-
-        if param1_val == param2_val:
-            self.data[param3] = 1
+        parameters = self._get_parameters(opstring, 3, 2)
+        if parameters[0] == parameters[1]:
+            self.data[parameters[2]] = 1
         else:
-            self.data[param3] = 0
+            self.data[parameters[2]] = 0
         self._increment_index(4)
 
     def _halt(self, _):
