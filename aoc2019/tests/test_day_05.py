@@ -3,22 +3,9 @@ import pytest
 from aoc2019.intcode import IntCode
 
 
-@pytest.mark.parametrize(
-    ("input_file", "user_input", "expected_result"),
-    [
-        ("tests/data/day_02_ex_1", 1, 3500),
-        ("tests/data/day_02_input", 1, 5866714),
-        ("tests/data/day_02_input_part2", 0, 19690720)
-    ]
-)
-def test_d2(input_file, user_input, expected_result):
-    intcode = IntCode()
-    intcode.get_input(input_file)
-    assert intcode.diagnostic_program(user_input) == expected_result
-
 def test_d5p1():
     intcode = IntCode()
-    intcode.get_input("tests/data/input_d5")
+    intcode.get_input("input/day_05")
     intcode.diagnostic_program(1)
     assert intcode.result == 16489636
 
@@ -30,6 +17,6 @@ def test_d5_examples():
 
 def test_d5p2():
     intcode = IntCode()
-    intcode.get_input("tests/data/input")
+    intcode.get_input("input/day_05")
     intcode.diagnostic_program(5)
     assert intcode.result == 9386583
