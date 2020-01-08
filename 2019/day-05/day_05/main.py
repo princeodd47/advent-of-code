@@ -3,8 +3,11 @@ import pdb
 
 from param_mode import ParamMode
 
-
-logging.basicConfig(level=logging.CRITICAL)
+logger = logging.getLogger(__name__)
+logging_fh = logging.FileHandler('debug.log')
+logger.addHandler(logging_fh)
+logger.setLevel(logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 
 
 def part1():
@@ -70,6 +73,7 @@ class IntCode():
             operation = self._get_operation(opcode)
             operation(opstring)
 
+        self._logger.debug(f"{self.result=}")
         return self.data[0]
 
     def _get_value_from_data(self, index_val):
@@ -166,18 +170,24 @@ class IntCode():
         param1_val = int(self._get_value(param1, param1_mode))
 
         parameters = self._get_parameters(opstring, 2, 1)
-        self._logger.debug(f"jt p1 {self._cur_index=} {param1=} {param1_mode=} {param1_val=}")
 
-        if param1_val != 0:
-            param2 = self._get_value_from_data(self._cur_index + 2)
-            param2_mode = int(opstring[1])
-            param2_val = int(self._get_value(param2, param2_mode))
+        param2 = self._get_value_from_data(self._cur_index + 2)
+        param2_mode = int(opstring[1])
+        param2_val = int(self._get_value(param2, param2_mode))
+        self._logger.debug(f"JT {self._cur_index=} {param1=} {param1_mode=} {param1_val=} "
+                           f"{param2=} {param2_mode=} {param2_val=} "
+                           f"{parameters[0]=} {parameters[1]=}")
 
-            self._logger.debug(f"jt p2 {self._cur_index=} {param2=} {param2_mode=} {param2_val=}")
+        # if param1_val != 0:
+        #     self._cur_index = param2_val
+        # else:
+        #     self._increment_index(3)
 
-            self._cur_index = param2_val
+        if parameters[0] != 0:
+            self._cur_index = parameters[1]
         else:
             self._increment_index(3)
+            self._logger.debug("JT incrementing index by 3")
 
     def _jump_if_false(self, opstring):
         """Opcode 6 is jump-if-false: if the first parameter is zero, it sets the
