@@ -1,7 +1,12 @@
 import logging
 import pdb
 
-logging.basicConfig(level=logging.DEBUG)
+from param_mode import ParamMode
+
+logger = logging.getLogger(__name__)
+logging_fh = logging.FileHandler('debug.log')
+logger.addHandler(logging_fh)
+logger.setLevel(logging.DEBUG)
 
 
 def part1():
@@ -60,7 +65,6 @@ class IntCode():
 
         while self._is_running:
             self._logger.debug(f"{self._cur_index=}")
-            self._logger.debug(f"{self.data[self._cur_index]=}")
             opstring = sanitize_opcode(self.data[self._cur_index])
             opcode = opstring[-2:]
 
@@ -75,32 +79,36 @@ class IntCode():
         else:
             return None
 
-    def _get_desired_index(self, param, mode):
-        if mode == 0:
+    def _get_value(self, param, mode):
+        if mode == ParamMode.POSITION:
             return self.data[param]
-        if mode == 1:
+        if mode == ParamMode.IMMEDIATE:
             return param
         raise Exception
+
+    def _get_value_2(self, param, mode, is_dest):
+        param = int(param)
+        mode = int(mode)
+        if mode == ParamMode.IMMEDIATE or is_dest:
+            return param
+        if mode == ParamMode.POSITION:
+            return int(self.data[param])
+        raise Exception(f"{mode=}")
 
     def _increment_index(self, value):
         self._cur_index += value
 
-    def _get_parameters(self, opstring, num_of_params, dest_index=None):
+    def _get_parameters(self, opstring="00001", num_of_params=3, dest=2):
         self._logger.debug(f"{self._cur_index=}")
-        self._logger.debug(f"{opstring=} {num_of_params=} {dest_index=}")
+        self._logger.debug(f"{opstring=} {num_of_params=} {dest=}")
+        mode_string = opstring[:-2]
         parameters = []
         for i in range(num_of_params):
             self._logger.debug(f"{i=}")
-            if self._cur_index + i == dest_index:
-                parameters.append(self.data[dest_index])
-            else:
-                parameter = self._get_value_from_data(self._cur_index + i)
-                self._logger.debug(f"{parameter=}")
-                parameter_mode = int(opstring[self._cur_index-(i+1)])
-                self._logger.debug(f"{parameter_mode=}")
-                parameter_val = int(self._get_desired_index(parameter, parameter_mode))
-                self._logger.debug(f"{parameter_val=}")
-                parameters.append(parameter_val)
+            parameter_mode = mode_string[-1 - i]
+            parameter = self.data[self._cur_index + i + 1]
+            parameter_val = self._get_value_2(parameter, parameter_mode, i == dest)
+            parameters.append(parameter_val)
 
         return tuple(parameters)
 
@@ -122,50 +130,16 @@ class IntCode():
         For example, if your Intcode computer encounters 1,10,20,30, it should read the
         values at positions 10 and 20, add those values, and then overwrite the value at
         position 30 with their sum."""
-        param1 = self._get_value_from_data(self._cur_index + 1)
-        param2 = self._get_value_from_data(self._cur_index + 2)
-        param3 = self._get_value_from_data(self._cur_index + 3)
-
-        param1_mode = int(opstring[2])
-        param2_mode = int(opstring[1])
-
-        param1_val = int(self._get_desired_index(param1, param1_mode))
-        param2_val = int(self._get_desired_index(param2, param2_mode))
-
-        self._logger.debug(f"add {self._cur_index=} {param1=} {param2=} {param3=} {param1_mode=} {param2_mode} {param1_val=} {param2_val=}")
-
-        self.data[param3] = param1_val + param2_val
-
-        # sanitized_opstring = self._sanitize_opstring(opstring, 3)
-        # parameters = self._get_parameters(sanitized_opstring, 3, self._cur_index+3)
-        # self._logger.debug(f"{parameters=}")
-        # self.data[parameters[2]] = parameters[0] + parameters[1]
-
+        parameters = self._get_parameters(opstring, 3, 2)
+        self.data[parameters[2]] = parameters[0] + parameters[1]
         self._increment_index(4)
 
     def _multiplication(self, opstring):
         """Opcode 2 works exactly like opcode 1, except it multiplies the two inputs instead
         of adding them. Again, the three integers after the opcode indicate where the inputs
         and outputs are, not their values."""
-        param1 = self._get_value_from_data(self._cur_index + 1)
-        param2 = self._get_value_from_data(self._cur_index + 2)
-        param3 = self._get_value_from_data(self._cur_index + 3)
-
-        param1_mode = int(opstring[2])
-        param2_mode = int(opstring[1])
-
-        param1_val = int(self._get_desired_index(param1, param1_mode))
-        param2_val = int(self._get_desired_index(param2, param2_mode))
-
-        self._logger.debug(f"mult {self._cur_index=} {param1=} {param2=} {param3=} {param1_mode=} {param2_mode} {param1_val=} {param2_val=}")
-
-        self.data[param3] = param1_val * param2_val
-
-        # sanitized_opstring = self._sanitize_opstring(opstring, 3)
-        # parameters = self._get_parameters(sanitized_opstring, 3, self._cur_index+3)
-        # self._logger.debug(f"{parameters=}")
-        # self.data[parameters[2]] = parameters[0] + parameters[1]
-
+        parameters = self._get_parameters(opstring, 3, 2)
+        self.data[parameters[2]] = parameters[0] * parameters[1]
         self._increment_index(4)
 
     def _input(self, opstring):
@@ -173,121 +147,58 @@ class IntCode():
            position given by its only parameter.
            For example, the instruction 3,50 would take an input value and store it at
            address 50."""
-        param1 = self._get_value_from_data(self._cur_index + 1)
-        self._logger.debug(f"input {self._cur_index=} {param1=}")
-
-        self.data[param1] = self._system_id
+        parameters = self._get_parameters(opstring, 1, 0)
+        self.data[parameters[0]] = self._system_id
         self._increment_index(2)
 
     def _output(self, opstring):
         """Opcode 4 outputs the value of its only parameter.
         For example, the instruction 4,50 would output the value at address 50."""
-        param1 = self._get_value_from_data(self._cur_index + 1)
-        param1_mode = int(opstring[2])
-        param1_val = int(self._get_desired_index(param1, param1_mode))
-
-        self._logger.debug(f"output {self._cur_index=} {param1=} {param1_mode=} {param1_val=}")
-
-        self.result_history.append(param1_val)
+        parameters = self._get_parameters(opstring, 1, None)
+        self.result_history.append(parameters[0])
         self._increment_index(2)
 
     def _jump_if_true(self, opstring):
         """Opcode 5 is jump-if-true: if the first parameter is non-zero, it sets the
         instruction pointer to the value from the second parameter. Otherwise, it does
         nothing."""
-        param1 = self._get_value_from_data(self._cur_index + 1)
-        param1_mode = int(opstring[2])
-        param1_val = int(self._get_desired_index(param1, param1_mode))
-
-        self._logger.debug(f"jt p1 {self._cur_index=} {param1=} {param1_mode=} {param1_val=}")
-
-        if param1_val != 0:
-            param2 = self._get_value_from_data(self._cur_index + 2)
-            param2_mode = int(opstring[1])
-            param2_val = int(self._get_desired_index(param2, param2_mode))
-
-            self._logger.debug(f"jt p2 {self._cur_index=} {param2=} {param2_mode=} {param2_val=}")
-
-            self._cur_index = param2_val
+        parameters = self._get_parameters(opstring, 2, None)
+        if parameters[0] != 0:
+            self._cur_index = parameters[1]
         else:
             self._increment_index(3)
+            self._logger.debug("JT incrementing index by 3")
 
     def _jump_if_false(self, opstring):
         """Opcode 6 is jump-if-false: if the first parameter is zero, it sets the
         instruction pointer to the value from the second parameter. Otherwise, it does
         nothing."""
-        param1 = self._get_value_from_data(self._cur_index + 1)
-        param1_mode = int(opstring[2])
-        param1_val = int(self._get_desired_index(param1, param1_mode))
-
-        self._logger.debug(f"jf p1 {self._cur_index=} {param1=} {param1_mode=} {param1_val=}")
-
-        if param1_val == 0:
-            param2 = self._get_value_from_data(self._cur_index + 2)
-            param2_mode = int(opstring[1])
-            param2_val = int(self._get_desired_index(param2, param2_mode))
-
-            self._logger.debug(f"jf p2 {self._cur_index=} {param2=} {param2_mode=} {param2_val=}")
-
-            self._cur_index = param2_val
+        parameters = self._get_parameters(opstring, 2, None)
+        if parameters[0] == 0:
+            self._cur_index = parameters[1]
         else:
             self._increment_index(3)
+            self._logger.debug("JF incrementing index by 3")
 
     def _less_than(self, opstring):
         """Opcode 7 is less than: if the first parameter is less than the second parameter,
         it stores 1 in the position given by the third parameter. Otherwise, it stores 0."""
-        param1 = self._get_value_from_data(self._cur_index + 1)
-        param1_mode = int(opstring[2])
-        param1_val = int(self._get_desired_index(param1, param1_mode))
-
-        param2 = self._get_value_from_data(self._cur_index + 2)
-        param2_mode = int(opstring[1])
-        param2_val = int(self._get_desired_index(param2, param2_mode))
-
-        param3 = self._get_value_from_data(self._cur_index + 3)
-
-        self._logger.debug(f"lt {self._cur_index=} {param1=} {param2=} {param3=} {param1_mode=} {param2_mode} {param1_val=} {param2_val=}")
-
-        if param1_val < param2_val:
-            self.data[param3] = 1
+        parameters = self._get_parameters(opstring, 3, 2)
+        if parameters[0] < parameters[1]:
+            self.data[parameters[2]] = 1
         else:
-            self.data[param3] = 0
+            self.data[parameters[2]] = 0
         self._increment_index(4)
 
     def _equals(self, opstring):
         """Opcode 8 is equals: if the first parameter is equal to the second parameter, it
         stores 1 in the position given by the third parameter. Otherwise, it stores 0."""
-        param1 = self._get_value_from_data(self._cur_index + 1)
-        param1_mode = int(opstring[2])
-        param1_val = int(self._get_desired_index(param1, param1_mode))
-
-        param2 = self._get_value_from_data(self._cur_index + 2)
-        param2_mode = int(opstring[1])
-        param2_val = int(self._get_desired_index(param2, param2_mode))
-
-        param3 = self._get_value_from_data(self._cur_index + 3)
-
-        self._logger.debug(f"eq {self._cur_index=} {param1=} {param2=} {param3=} {param1_mode=} {param2_mode} {param1_val=} {param2_val=}")
-
-        if param1_val == param2_val:
-            self.data[param3] = 1
+        parameters = self._get_parameters(opstring, 3, 2)
+        if parameters[0] == parameters[1]:
+            self.data[parameters[2]] = 1
         else:
-            self.data[param3] = 0
+            self.data[parameters[2]] = 0
         self._increment_index(4)
 
     def _halt(self, _):
         self._is_running = False
-
-    def _print_table_header(self):
-        print("i".rjust(4), end=" | ")
-        count = 5
-        for i in range(len(self.data)):
-            print(str(i).rjust(4), end=" | ")
-            count += 6
-        print("\n"+"="*count)
-
-    def _print_table(self):
-        print(str(self._cur_index).rjust(3), end=" | ")
-        for i in self.data:
-            print(str(i).rjust(4), end=" | ")
-        print()
