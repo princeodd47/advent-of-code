@@ -8,3 +8,6 @@ test:
 .PHONY: clean
 clean:
 	@rm -rf .pytest_cache
+	@rm -rf __pycache__
+	@rm -rf aoc2019/__pycache__
+	@rm -rf tests/__pycache__
