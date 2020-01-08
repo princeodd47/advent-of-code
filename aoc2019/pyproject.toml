@@ -1,12 +1,12 @@
 [tool.poetry]
-name = "day-05"
+name = "aoc2019"
 version = "0.1.0"
 description = ""
 authors = ["Steven Powell <princeodd@gmail.com>"]
 
 [tool.poetry.scripts]
-aoc1 = "day_05.main:part1"
-aoc2 = "day_05.main:part2"
+d5p1 = "aoc2019.day_05:part1"
+d5p2 = "aoc2019.day_05:part2"
 
 [tool.poetry.dependencies]
 python = "^3.8"
