@@ -7,7 +7,6 @@ logger = logging.getLogger(__name__)
 logging_fh = logging.FileHandler('debug.log')
 logger.addHandler(logging_fh)
 logger.setLevel(logging.DEBUG)
-# logging.basicConfig(level=logging.DEBUG)
 
 
 def part1():
@@ -66,14 +65,12 @@ class IntCode():
 
         while self._is_running:
             self._logger.debug(f"{self._cur_index=}")
-            self._logger.debug(f"{self.data[self._cur_index]=}")
             opstring = sanitize_opcode(self.data[self._cur_index])
             opcode = opstring[-2:]
 
             operation = self._get_operation(opcode)
             operation(opstring)
 
-        self._logger.debug(f"{self.result=}")
         return self.data[0]
 
     def _get_value_from_data(self, index_val):
@@ -165,24 +162,7 @@ class IntCode():
         """Opcode 5 is jump-if-true: if the first parameter is non-zero, it sets the
         instruction pointer to the value from the second parameter. Otherwise, it does
         nothing."""
-        param1 = self._get_value_from_data(self._cur_index + 1)
-        param1_mode = int(opstring[2])
-        param1_val = int(self._get_value(param1, param1_mode))
-
-        parameters = self._get_parameters(opstring, 2, 1)
-
-        param2 = self._get_value_from_data(self._cur_index + 2)
-        param2_mode = int(opstring[1])
-        param2_val = int(self._get_value(param2, param2_mode))
-        self._logger.debug(f"JT {self._cur_index=} {param1=} {param1_mode=} {param1_val=} "
-                           f"{param2=} {param2_mode=} {param2_val=} "
-                           f"{parameters[0]=} {parameters[1]=}")
-
-        # if param1_val != 0:
-        #     self._cur_index = param2_val
-        # else:
-        #     self._increment_index(3)
-
+        parameters = self._get_parameters(opstring, 2, None)
         if parameters[0] != 0:
             self._cur_index = parameters[1]
         else:
@@ -256,17 +236,3 @@ class IntCode():
 
     def _halt(self, _):
         self._is_running = False
-
-    def _print_table_header(self):
-        print("i".rjust(4), end=" | ")
-        count = 5
-        for i in range(len(self.data)):
-            print(str(i).rjust(4), end=" | ")
-            count += 6
-        print("\n"+"="*count)
-
-    def _print_table(self):
-        print(str(self._cur_index).rjust(3), end=" | ")
-        for i in self.data:
-            print(str(i).rjust(4), end=" | ")
-        print()
