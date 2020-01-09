@@ -1,15 +1,23 @@
 from .common import get_input
 
 def part1():
+    print(get_total_fuel("input/day_01"))
+
+
+def part2():
+    print(get_total_fuel_nested("input/day_01"))
+
+
+def get_total_fuel(input_file):
     total = 0
-    nums = get_input("input/day_01")
+    nums = get_input(input_file)
     for num in nums:
         total = total + (num//3)-2
     return total
 
 
-def part2():
-    modules = get_input("input/day_01")
+def get_total_fuel_nested(input_file):
+    modules = get_input(input_file)
     total = sum(get_fuel(module) for module in modules)
     return total
 
