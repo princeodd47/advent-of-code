@@ -6,6 +6,7 @@ authors = ["Steven Powell <princeodd@gmail.com>"]
 
 [tool.poetry.scripts]
 d2p1 = "aoc2019.day_02:part1"
+d3p2 = "aoc2019.day_03:part2"
 d5p1 = "aoc2019.day_05:part1"
 d5p2 = "aoc2019.day_05:part2"
 

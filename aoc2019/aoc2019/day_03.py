@@ -221,27 +221,45 @@ def find_shortest_distance(intersections):
             shortest_distance = distance
     return shortest_distance
 
+def part1():
+    shortest_distance = get_shortest_total_distance("input/day_03_ex_1")
+    print(shortest_distance)
 
-def main():
+
+def part2():
+    shortest_distance = get_shortest_total_distance("input/day_03_ex_1")
+    print(shortest_distance)
+
+
+def get_manhattan_distance(input):
     starmap = StarMap()
-    lines = starmap.get_input("input")
+    lines = starmap.get_input(input)
     wires = starmap.get_wires(lines)
     wires_segments = starmap.get_segments(wires)
     line_0_points = starmap.get_points(0, wires_segments[0])
-    # print(f"line_0_points: {line_0_points}")
-    # print(f"starmap.wires_distance_to_points[0]: {starmap.wires_distance_to_points[0]}")
     line_1_points = starmap.get_points(1, wires_segments[1])
     intersections = find_intersections(line_0_points, line_1_points)
-    # print(f"intersections: {intersections}")
+
+    if intersections:
+        shortest_distance = find_shortest_distance(intersections)
+        return shortest_distance
+    return None
+
+
+def get_shortest_total_distance(input):
+    starmap = StarMap()
+    lines = starmap.get_input(input)
+    wires = starmap.get_wires(lines)
+    wires_segments = starmap.get_segments(wires)
+    line_0_points = starmap.get_points(0, wires_segments[0])
+    line_1_points = starmap.get_points(1, wires_segments[1])
+    intersections = find_intersections(line_0_points, line_1_points)
 
     if intersections:
         shortest_total_distance = float("inf")
-        shortest_distance = find_shortest_distance(intersections)
-        # print(f"shortest_distance: {shortest_distance}")
         for point in intersections:
             total_distance = starmap.get_shortest_total_distance_to_point(point)
             if total_distance < shortest_total_distance:
                 shortest_total_distance = total_distance
-        print(shortest_total_distance)
-
-main()
+        return shortest_total_distance
+    return None
