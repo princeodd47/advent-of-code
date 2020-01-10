@@ -24,4 +24,4 @@ def test_part1(input_file, expected_result):
 )
 def test_part2(input_file, expected_result):
     orbital_map = day_06.OrbitalMap(input_file)
-    assert orbital_map.get_distance_between_objects("COM", "SAN") == expected_result
+    assert orbital_map.get_distance_between_objects("YOU", "SAN") == expected_result

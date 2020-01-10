@@ -31,13 +31,13 @@ class OrbitalMap():
             total = total + self._get_distance_to_obj(satellite, obj)
         return total
 
-    def get_orbits_to_com(self, satellite):
+    def _get_orbits_to_com(self, satellite):
         if satellite == "COM":
             return "COM"
         primary = self._map[satellite]
         if satellite not in self._memo_list:
             self._memo_list.append(satellite)
-            self.get_orbits_to_com(primary)
+            self._get_orbits_to_com(primary)
 
     def get_distance_between_objects(self, obj1, obj2):
         obj1_orbits = []
@@ -66,6 +66,17 @@ class OrbitalMap():
             distance = obj1_orbits.index(intersect) + len(obj2_orbits)
         return distance
 
+    def get_distance_2(self, obj1, obj2):
+        self._get_orbits_to_com(obj1)
+        obj1_orbits = self._memo_list
+        self._memo_list.clear()
+        obj2_orbits = []
+        while obj2 not in obj1_orbits:
+            obj2 = self._map[obj2]
+            obj2_orbits.append(obj2)
+            print(f"{obj2}")
+        print(obj1_orbits.index(obj2))
+        print(obj2_orbits.index(obj2))
 
 def part1():
     orbital_map = OrbitalMap("input/day_06")
@@ -90,3 +101,5 @@ def part2():
     orbital_map = OrbitalMap("input/day_06")
     distance = orbital_map.get_distance_between_objects("YOU", "SAN")
     print(f"{distance=}")
+
+    orbital_map.get_distance_2("YOU", "SAN")
