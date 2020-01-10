@@ -102,4 +102,4 @@ def part2():
     distance = orbital_map.get_distance_between_objects("YOU", "SAN")
     print(f"{distance=}")
 
-    orbital_map.get_distance_2("YOU", "SAN")
+    # orbital_map.get_distance_2("YOU", "SAN")
