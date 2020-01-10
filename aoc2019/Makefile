@@ -1,9 +1,19 @@
 VENV = poetry run
 PYTEST_ARGS = -vv
+PYTEST_TARGETS ?= "day_07"
+INTCODE_DAYS = "day_02 or day_05 or day_07"
 
 .PHONY: test
 test:
+	-$(VENV) pytest $(PYTEST_ARGS) -k $(PYTEST_TARGETS)
+
+.PHONY: test-all
+test-all:
 	-$(VENV) pytest $(PYTEST_ARGS)
+
+.PHONY: test-intcode
+test-intcode:
+	-$(VENV) pytest $(PYTEST_ARGS) -k $(INTCODE_DAYS)
 
 .PHONY: clean
 clean:
