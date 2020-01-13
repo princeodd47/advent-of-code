@@ -18,7 +18,7 @@ class IntCode():
         self._logger = logging.getLogger(__name__)
         self._is_running = False
         self._cur_index = 0
-        self._system_id = 0
+        self._user_input = []
         self.data = []
         self.result_history = []
 
@@ -47,7 +47,7 @@ class IntCode():
 
     def diagnostic_program(self, user_input):
         self._is_running = True
-        self._system_id = user_input
+        self._user_input = user_input
         opstring = ""
 
         while self._is_running:
@@ -135,7 +135,7 @@ class IntCode():
            For example, the instruction 3,50 would take an input value and store it at
            address 50."""
         parameters = self._get_parameters(opstring, 1, 0)
-        self.data[parameters[0]] = self._system_id
+        self.data[parameters[0]] = self._user_input.pop(0)
         self._increment_index(2)
 
     def _output(self, opstring):
