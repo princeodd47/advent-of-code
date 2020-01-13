@@ -45,14 +45,11 @@ class IntCode():
             line = fh.readline().strip('\n')
             self.data = [int(value) for value in line.split(",")]
 
-
     def set_user_input(self, user_input):
-        self._user_input = user_input
-
+        self._user_input.extend(user_input)
 
     def diagnostic_program(self):
         self._is_running = True
-        opstring = ""
 
         while self._is_running:
             self._logger.debug(f"{self._cur_index=}")
@@ -138,6 +135,9 @@ class IntCode():
            position given by its only parameter.
            For example, the instruction 3,50 would take an input value and store it at
            address 50."""
+        if len(self._user_input) == 0:
+            self._halt()
+            return
         parameters = self._get_parameters(opstring, 1, 0)
         self.data[parameters[0]] = self._user_input.pop(0)
         self._increment_index(2)
@@ -191,5 +191,5 @@ class IntCode():
             self.data[parameters[2]] = 0
         self._increment_index(4)
 
-    def _halt(self, _):
+    def _halt(self, _=None):
         self._is_running = False
