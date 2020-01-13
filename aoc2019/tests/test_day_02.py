@@ -14,4 +14,5 @@ from aoc2019.intcode import IntCode
 def test_d2(input_file, user_input, expected_result):
     intcode = IntCode()
     intcode.get_input(input_file)
-    assert intcode.diagnostic_program(user_input) == expected_result
+    intcode.set_user_input(user_input)
+    assert intcode.diagnostic_program() == expected_result

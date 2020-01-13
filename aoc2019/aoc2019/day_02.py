@@ -4,5 +4,6 @@ from .intcode import IntCode
 def part1():
     intcode = IntCode()
     intcode.get_input("input/day_02")
-    value = intcode.diagnostic_program(None)
+    intcode.set_user_input(None)
+    value = intcode.diagnostic_program()
     print(value)

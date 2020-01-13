@@ -45,9 +45,13 @@ class IntCode():
             line = fh.readline().strip('\n')
             self.data = [int(value) for value in line.split(",")]
 
-    def diagnostic_program(self, user_input):
-        self._is_running = True
+
+    def set_user_input(self, user_input):
         self._user_input = user_input
+
+
+    def diagnostic_program(self):
+        self._is_running = True
         opstring = ""
 
         while self._is_running:
