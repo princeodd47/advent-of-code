@@ -21,6 +21,7 @@ class IntCode():
         self._user_input = []
         self.data = []
         self.result_history = []
+        self.halt_code_reached = False
 
     @property
     def result(self):
@@ -136,7 +137,7 @@ class IntCode():
            For example, the instruction 3,50 would take an input value and store it at
            address 50."""
         if len(self._user_input) == 0:
-            self._halt()
+            self._is_running = False
             return
         parameters = self._get_parameters(opstring, 1, 0)
         self.data[parameters[0]] = self._user_input.pop(0)
@@ -193,3 +194,4 @@ class IntCode():
 
     def _halt(self, _=None):
         self._is_running = False
+        self.halt_code_reached = True
