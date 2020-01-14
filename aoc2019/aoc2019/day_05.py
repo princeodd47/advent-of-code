@@ -12,12 +12,14 @@ logger.setLevel(logging.DEBUG)
 def part1():
     test = IntCode()
     test.get_input("input/day_05")
-    test.diagnostic_program(1)
+    test.set_user_input([1])
+    test.diagnostic_program()
     print(test.result)
 
 
 def part2():
     test = IntCode()
     test.get_input("input/day_05")
-    test.diagnostic_program(5)
+    test.set_user_input([5])
+    test.diagnostic_program()
     print(test.result)
