@@ -33,7 +33,7 @@ def part2():
         image.append([])
         for col in range(width):
             image[row].append(get_pixel_value(decoded_data, row, col))
-    print(image)
+    print_image(image)
 
 
 def get_pixel_value(decoded_data, row, col):
@@ -41,6 +41,15 @@ def get_pixel_value(decoded_data, row, col):
 
 
 def print_image(image):
+    length = 6
+    width = 25
+    for row in range(length):
+        for col in range(width):
+            if image[row][col] == 0:
+                print('\u2588', end='')
+            if image[row][col] == 1:
+                print(' ', end='')
+        print("\n", end='')
 
 def get_count_in_layer(layer, num):
     count = 0
