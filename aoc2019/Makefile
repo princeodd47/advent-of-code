@@ -1,6 +1,6 @@
 VENV = poetry run
 PYTEST_ARGS = -vv
-PYTEST_TARGETS ?= "day_09"
+PYTEST_TARGETS ?= "day_10"
 INTCODE_DAYS = "intcode or day_02 or day_05 or day_07 or day_09"
 
 .PHONY: test
