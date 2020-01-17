@@ -4,12 +4,12 @@ import pdb
 from .param_mode import ParamMode
 
 logger = logging.getLogger(__name__)
-logging_fh = logging.FileHandler('debug.log')
+logging_fh = logging.FileHandler('debug.log', mode='w')
 logger.addHandler(logging_fh)
 logger.setLevel(logging.DEBUG)
 
 
-def sanitize_opcode(val):
+def _sanitize_opcode(val):
     return str(val).zfill(5)
 
 
@@ -18,8 +18,9 @@ class IntCode():
         self._logger = logging.getLogger(__name__)
         self._is_running = False
         self._cur_index = 0
+        self._relative_base = 0
         self._user_input = []
-        self.data = []
+        self._data = {}
         self.result_history = []
         self.halt_code_reached = False
 
@@ -37,6 +38,7 @@ class IntCode():
             "06": self._jump_if_false,
             "07": self._less_than,
             "08": self._equals,
+            "09": self._relative_base_offset,
             "99": self._halt
         }
         return op_map.get(opcode)
@@ -44,50 +46,54 @@ class IntCode():
     def get_input(self, input_file):
         with open(input_file, 'r') as fh:
             line = fh.readline().strip('\n')
-            self.data = [int(value) for value in line.split(",")]
+            self._data = {index:int(value) for index, value in enumerate(line.split(","))}
 
     def set_user_input(self, user_input):
-        self._user_input.extend(user_input)
+        if user_input:
+            self._user_input.extend(user_input)
 
     def diagnostic_program(self):
         self._is_running = True
 
         while self._is_running:
             self._logger.debug(f"{self._cur_index=}")
-            opstring = sanitize_opcode(self.data[self._cur_index])
+            opstring = _sanitize_opcode(self._get_value_from_data(self._cur_index))
             opcode = opstring[-2:]
+            self._logger.debug(f"{opstring=} {opcode=}")
 
             operation = self._get_operation(opcode)
             operation(opstring)
+            self._logger.debug("")
 
-        return self.data[0]
+        return self._data[0]
 
-    def _get_value_from_data(self, index_val):
-        if index_val < len(self.data) - 1:
-            return int(self.data[index_val])
-        else:
-            return None
+    def _get_value_from_data(self, param):
+        if param < 0:
+            raise Exception(f"ERROR: invalid index: {param}")
+        return self._data.get(param, 0)
 
-    def _get_value(self, param, mode):
-        if mode == ParamMode.POSITION:
-            return self.data[param]
-        if mode == ParamMode.IMMEDIATE:
-            return param
-        raise Exception
-
-    def _get_value_2(self, param, mode, is_dest):
+    def _get_value(self, param, mode, is_dest):
+        self._logger.debug(f"_get_value called with {param=} {mode=} {is_dest=}")
         param = int(param)
         mode = int(mode)
-        if mode == ParamMode.IMMEDIATE or is_dest:
+        if mode == ParamMode.RELATIVE:
+            self._logger.debug(f"RELATIVE used: {param=} + {self._relative_base=}")
+            self._logger.debug(f"returning {self._get_value_from_data(param + self._relative_base)}")
+            if is_dest:
+                return param + self._relative_base
+            return self._get_value_from_data(param + self._relative_base)
+        if mode == ParamMode.IMMEDIATE:
             return param
         if mode == ParamMode.POSITION:
-            return int(self.data[param])
+            if is_dest:
+                return param
+            return self._get_value_from_data(param)
         raise Exception(f"{mode=}")
 
     def _increment_index(self, value):
         self._cur_index += value
 
-    def _get_parameters(self, opstring="00001", num_of_params=3, dest=2):
+    def _get_parameters(self, opstring, num_of_params, dest):
         self._logger.debug(f"{self._cur_index=}")
         self._logger.debug(f"{opstring=} {num_of_params=} {dest=}")
         mode_string = opstring[:-2]
@@ -95,8 +101,8 @@ class IntCode():
         for i in range(num_of_params):
             self._logger.debug(f"{i=}")
             parameter_mode = mode_string[-1 - i]
-            parameter = self.data[self._cur_index + i + 1]
-            parameter_val = self._get_value_2(parameter, parameter_mode, i == dest)
+            parameter = self._get_value_from_data(self._cur_index + i + 1)
+            parameter_val = self._get_value(parameter, parameter_mode, i == dest)
             parameters.append(parameter_val)
 
         return tuple(parameters)
@@ -120,7 +126,7 @@ class IntCode():
         values at positions 10 and 20, add those values, and then overwrite the value at
         position 30 with their sum."""
         parameters = self._get_parameters(opstring, 3, 2)
-        self.data[parameters[2]] = parameters[0] + parameters[1]
+        self._data[parameters[2]] = parameters[0] + parameters[1]
         self._increment_index(4)
 
     def _multiplication(self, opstring):
@@ -128,7 +134,7 @@ class IntCode():
         of adding them. Again, the three integers after the opcode indicate where the inputs
         and outputs are, not their values."""
         parameters = self._get_parameters(opstring, 3, 2)
-        self.data[parameters[2]] = parameters[0] * parameters[1]
+        self._data[parameters[2]] = parameters[0] * parameters[1]
         self._increment_index(4)
 
     def _input(self, opstring):
@@ -140,7 +146,7 @@ class IntCode():
             self._is_running = False
             return
         parameters = self._get_parameters(opstring, 1, 0)
-        self.data[parameters[0]] = self._user_input.pop(0)
+        self._data[parameters[0]] = self._user_input.pop(0)
         self._increment_index(2)
 
     def _output(self, opstring):
@@ -177,9 +183,9 @@ class IntCode():
         it stores 1 in the position given by the third parameter. Otherwise, it stores 0."""
         parameters = self._get_parameters(opstring, 3, 2)
         if parameters[0] < parameters[1]:
-            self.data[parameters[2]] = 1
+            self._data[parameters[2]] = 1
         else:
-            self.data[parameters[2]] = 0
+            self._data[parameters[2]] = 0
         self._increment_index(4)
 
     def _equals(self, opstring):
@@ -187,10 +193,18 @@ class IntCode():
         stores 1 in the position given by the third parameter. Otherwise, it stores 0."""
         parameters = self._get_parameters(opstring, 3, 2)
         if parameters[0] == parameters[1]:
-            self.data[parameters[2]] = 1
+            self._data[parameters[2]] = 1
         else:
-            self.data[parameters[2]] = 0
+            self._data[parameters[2]] = 0
         self._increment_index(4)
+
+    def _relative_base_offset(self, opstring):
+        self._logger.debug("_relative_base_offset called")
+        self._logger.debug(f"offset: {self._relative_base=}")
+        parameters = self._get_parameters(opstring, 1, None)
+        self._relative_base += parameters[0]
+        self._logger.debug(f"offset: {self._relative_base=}")
+        self._increment_index(2)
 
     def _halt(self, _=None):
         self._is_running = False
