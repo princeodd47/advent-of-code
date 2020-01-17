@@ -4,12 +4,12 @@ import pdb
 from .param_mode import ParamMode
 
 logger = logging.getLogger(__name__)
-logging_fh = logging.FileHandler('debug.log')
+logging_fh = logging.FileHandler('debug.log', mode='w')
 logger.addHandler(logging_fh)
 logger.setLevel(logging.DEBUG)
 
 
-def sanitize_opcode(val):
+def _sanitize_opcode(val):
     return str(val).zfill(5)
 
 
@@ -38,7 +38,7 @@ class IntCode():
             "06": self._jump_if_false,
             "07": self._less_than,
             "08": self._equals,
-            "09": self._adjust_relative,
+            "09": self._relative_base_offset,
             "99": self._halt
         }
         return op_map.get(opcode)
@@ -49,30 +49,45 @@ class IntCode():
             self._data = {index:int(value) for index, value in enumerate(line.split(","))}
 
     def set_user_input(self, user_input):
-        self._user_input.extend(user_input)
+        if user_input:
+            self._user_input.extend(user_input)
 
     def diagnostic_program(self):
         self._is_running = True
 
         while self._is_running:
             self._logger.debug(f"{self._cur_index=}")
-            opstring = sanitize_opcode(self._data[self._cur_index])
+            opstring = _sanitize_opcode(self._get_value_from_data(self._cur_index))
             opcode = opstring[-2:]
+            self._logger.debug(f"{opstring=} {opcode=}")
 
             operation = self._get_operation(opcode)
             operation(opstring)
+            self._logger.debug("")
 
         return self._data[0]
 
+    def _get_value_from_data(self, param):
+        if param < 0:
+            raise Exception(f"ERROR: invalid index: {param}")
+        return self._data.get(param, 0)
+
     def _get_value(self, param, mode, is_dest):
+        self._logger.debug(f"_get_value called with {param=} {mode=} {is_dest=}")
         param = int(param)
         mode = int(mode)
-        if mode == ParamMode.IMMEDIATE or is_dest:
+        if mode == ParamMode.RELATIVE:
+            self._logger.debug(f"RELATIVE used: {param=} + {self._relative_base=}")
+            self._logger.debug(f"returning {self._get_value_from_data(param + self._relative_base)}")
+            if is_dest:
+                return param + self._relative_base
+            return self._get_value_from_data(param + self._relative_base)
+        if mode == ParamMode.IMMEDIATE:
             return param
         if mode == ParamMode.POSITION:
-            return int(self._data[param])
-        if mode == ParamMode.RELATIVE:
-            return int(self._data[param] + self._relative_base)
+            if is_dest:
+                return param
+            return self._get_value_from_data(param)
         raise Exception(f"{mode=}")
 
     def _increment_index(self, value):
@@ -86,7 +101,7 @@ class IntCode():
         for i in range(num_of_params):
             self._logger.debug(f"{i=}")
             parameter_mode = mode_string[-1 - i]
-            parameter = self._data.get(self._cur_index + i + 1)
+            parameter = self._get_value_from_data(self._cur_index + i + 1)
             parameter_val = self._get_value(parameter, parameter_mode, i == dest)
             parameters.append(parameter_val)
 
@@ -183,9 +198,13 @@ class IntCode():
             self._data[parameters[2]] = 0
         self._increment_index(4)
 
-    def _adjust_relative(self, opstring):
+    def _relative_base_offset(self, opstring):
+        self._logger.debug("_relative_base_offset called")
+        self._logger.debug(f"offset: {self._relative_base=}")
         parameters = self._get_parameters(opstring, 1, None)
         self._relative_base += parameters[0]
+        self._logger.debug(f"offset: {self._relative_base=}")
+        self._increment_index(2)
 
     def _halt(self, _=None):
         self._is_running = False
