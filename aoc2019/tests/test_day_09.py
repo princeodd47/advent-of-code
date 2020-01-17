@@ -24,7 +24,3 @@ def test_quine():
     ex1.get_input("input/day_09_p1_ex1")
     ex1.diagnostic_program()
     assert ex1.result_history == [109, 1, 204, -1, 1001, 100, 1, 100, 1008, 100, 16, 101, 1006, 101, 0, 99]
-
-
-def test_part2():
-    pass

@@ -9,6 +9,9 @@ def part1():
     print(f"{boost.result_history=}")
 
 
-
 def part2():
-    pass
+    boost = IntCode()
+    boost.get_input("input/day_09")
+    boost.set_user_input([2])
+    boost.diagnostic_program()
+    print(f"{boost.result_history=}")
