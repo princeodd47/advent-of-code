@@ -17,7 +17,7 @@ def get_slope(initial_point, terminal_point):
     return slope
 
 
-def get_points_from_file(input_file, target_character):
+def get_points_from_file(input_file, target_character='#'):
     points = []
     with open(input_file, 'r') as fh:
         for y, line in enumerate(fh.readlines(0)):

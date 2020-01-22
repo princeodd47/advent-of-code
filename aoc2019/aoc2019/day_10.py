@@ -3,12 +3,12 @@ import math
 from aoc2019 import point
 
 
-def part1(input_file="input/day_10_p1_ex2"):
+def part1(input_file="input/day_10"):
     best_point = {
         "coordinates": point.Point(0, 0),
         "visible_points": 0
     }
-    points = point.get_points_from_file(input_file, "#")
+    points = point.get_points_from_file(input_file)
     for initial_point in points:
         terminal_angles = set()
         for terminal_point in points:
@@ -25,5 +25,17 @@ def part1(input_file="input/day_10_p1_ex2"):
     return best_point['coordinates'], best_point['visible_points']
 
 
-def part2():
-    pass
+def part2(input_file="input/day_10"):
+    initial_point = point.Point(28, 29)
+    points = point.get_points_from_file(input_file)
+    points.remove(initial_point)
+    terminal_angles = {}
+    for terminal_point in points:
+        delta_y = terminal_point.y - initial_point.y
+        delta_x = terminal_point.x - initial_point.x
+        angle = math.atan2(delta_y, delta_x)
+        if angle not in terminal_angles:
+            terminal_angles[angle] = terminal_point
+        else:
+            # TODO
+            reorder_angles(terminal_angles)
