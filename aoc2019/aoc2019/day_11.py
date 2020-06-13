@@ -55,14 +55,14 @@ class Robot:
             self._logger.debug(f"{self.position_string=} not in self.grid: adding with default"
                                "values")
             self.grid[self.position_string] = {'color': Color.BLACK, 'paint_count': 0}
-        self._logger.debug(f"{self.grid[self.position_string]['color']=}")
+        self._logger.debug(f"{self.grid[self.position_string]}")
         return
 
     def paint_position(self, new_color):
         """
         Changes color of current position in grid.
         """
-        self._logger.debug("paint_position({new_color]}")
+        self._logger.debug(f"paint_position({new_color})")
         self._logger.debug(f"{self.position_string=} {self.grid[self.position_string]=}")
         self.grid[self.position_string]['color'] = new_color
         self.grid[self.position_string]['paint_count'] += 1
@@ -94,7 +94,7 @@ class Robot:
 
     def print_grid(self):
         for y in range(self._grid_max_point.y+1, self._grid_min_point.y-1, -1):
-            for x in range(self._grid_max_point.x, self._grid_min_point.x-1, -1):
+            for x in range(self._grid_min_point.x, self._grid_max_point.x+1, 1):
                 position_string = f"{x}_{y}"
                 if position_string not in self.grid:
                     color = Color.BLACK

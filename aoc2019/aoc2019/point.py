@@ -7,10 +7,10 @@ class Point:
     y: int
 
     def move_left(self, distance=1):
-        self.x += distance
+        self.x -= distance
 
     def move_right(self, distance=1):
-        self.x -= distance
+        self.x += distance
 
     def move_up(self, distance=1):
         self.y += distance
