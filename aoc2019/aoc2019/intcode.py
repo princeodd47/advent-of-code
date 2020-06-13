@@ -48,7 +48,7 @@ class IntCode():
     def get_input(self, input_file):
         with open(input_file, 'r') as fh:
             line = fh.readline().strip('\n')
-            self._data = {index:int(value) for index, value in enumerate(line.split(","))}
+            self._data = {index: int(value) for index, value in enumerate(line.split(","))}
 
     def set_user_input(self, user_input):
         if user_input:

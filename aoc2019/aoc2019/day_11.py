@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from enum import Enum, IntEnum
+from enum import Enum
 import logging
 
 from .intcode import IntCode
@@ -19,17 +19,18 @@ logger.setLevel(logging.DEBUG)
 # - 0 paint cur_panel black, 1 paint cur_panel white
 # - 0 turn left 90 degrees, 1 turn right 90 degrees
 
-# TODO: Why is endless loop?
 
 class Color(Enum):
     BLACK = 0
     WHITE = 1
+
 
 class Direction(Enum):
     NORTH = 1
     EAST = 2
     SOUTH = 3
     WEST = 4
+
 
 @dataclass
 class Robot:
@@ -38,11 +39,11 @@ class Robot:
         self._logger.debug("Robot initialized")
         self.grid = dict()
         self.position = point.Point(x=0, y=0)
-        self.direction = Direction.NORTH
         self.move_count = 0
-        self._logger.debug("")
+        self._direction = Direction.NORTH
         self._grid_min_point = point.Point(x=0, y=0)
         self._grid_max_point = point.Point(x=0, y=0)
+        self._logger.debug("")
 
     @property
     def position_string(self):
@@ -51,12 +52,16 @@ class Robot:
     @property
     def current_color(self):
         if self.position_string not in self.grid:
-            self._logger.debug(f"{self.position_string=} not in self.grid: adding with default values")
-            self.grid[self.position_string] = {'color':Color.BLACK, 'paint_count':0}
+            self._logger.debug(f"{self.position_string=} not in self.grid: adding with default"
+                               "values")
+            self.grid[self.position_string] = {'color': Color.BLACK, 'paint_count': 0}
         self._logger.debug(f"{self.grid[self.position_string]['color']=}")
-        return 
+        return
 
     def paint_position(self, new_color):
+        """
+        Changes color of current position in grid.
+        """
         self._logger.debug("paint_position({new_color]}")
         self._logger.debug(f"{self.position_string=} {self.grid[self.position_string]=}")
         self.grid[self.position_string]['color'] = new_color
@@ -64,58 +69,28 @@ class Robot:
         self._logger.debug(f"{self.position_string=} {self.grid[self.position_string]=}")
 
     def change_direction(self, new_direction):
-        self._logger.debug(f"{self.direction}")
+        self._logger.debug(f"{self._direction}")
         if new_direction == 0:
             self._logger.debug("turn left")
             self._turn_left()
         else:
             self._logger.debug("turn right")
             self._turn_right()
-        self._logger.debug(f"{self.direction}")
-
-    def _turn_left(self):
-        if self.direction == Direction.NORTH:
-            self.direction = Direction.WEST
-        elif self.direction == Direction.EAST:
-            self.direction = Direction.NORTH
-        elif self.direction == Direction.SOUTH:
-            self.direction = Direction.EAST
-        elif self.direction == Direction.WEST:
-            self.direction = Direction.SOUTH
-
-    def _turn_right(self):
-        if self.direction == Direction.NORTH:
-            self.direction = Direction.EAST
-        elif self.direction == Direction.EAST:
-            self.direction = Direction.SOUTH
-        elif self.direction == Direction.SOUTH:
-            self.direction = Direction.WEST
-        elif self.direction == Direction.WEST:
-            self.direction = Direction.NORTH
+        self._logger.debug(f"{self._direction}")
 
     def move_forward(self, distance=1):
         self._logger.debug(f"BEGIN {self.position=}")
         self._logger.debug(f"moving forward {distance=}")
-        if self.direction == Direction.NORTH:
+        if self._direction == Direction.NORTH:
             self.position.move_up(distance)
-        elif self.direction == Direction.EAST:
+        elif self._direction == Direction.EAST:
             self.position.move_right(distance)
-        elif self.direction == Direction.SOUTH:
+        elif self._direction == Direction.SOUTH:
             self.position.move_down(distance)
-        elif self.direction == Direction.WEST:
+        elif self._direction == Direction.WEST:
             self.position.move_left(distance)
         self._logger.debug(f"{self.position=}")
         self._update_grid_size()
-
-    def _update_grid_size(self):
-        if self.position.x < self._grid_min_point.x:
-            self._grid_min_point.x = self.position.x
-        if self.position.y < self._grid_min_point.y:
-            self._grid_min_point.y = self.position.y
-        if self.position.x > self._grid_max_point.x:
-            self._grid_max_point.x = self.position.x
-        if self.position.y > self._grid_max_point.y:
-            self._grid_max_point.y = self.position.y
 
     def print_grid(self):
         for y in range(self._grid_max_point.y+1, self._grid_min_point.y-1, -1):
@@ -127,10 +102,41 @@ class Robot:
                     color = self.grid[position_string]['color']
 
                 if color == Color.WHITE:
-                    print(u"\u2588", end = '')
+                    print(u"\u2588", end='')
                 else:
-                    print(' ', end = '')
+                    print(' ', end='')
             print('')
+
+    def _turn_left(self):
+        if self._direction == Direction.NORTH:
+            self._direction = Direction.WEST
+        elif self._direction == Direction.EAST:
+            self._direction = Direction.NORTH
+        elif self._direction == Direction.SOUTH:
+            self._direction = Direction.EAST
+        elif self._direction == Direction.WEST:
+            self._direction = Direction.SOUTH
+
+    def _turn_right(self):
+        if self._direction == Direction.NORTH:
+            self._direction = Direction.EAST
+        elif self._direction == Direction.EAST:
+            self._direction = Direction.SOUTH
+        elif self._direction == Direction.SOUTH:
+            self._direction = Direction.WEST
+        elif self._direction == Direction.WEST:
+            self._direction = Direction.NORTH
+
+    def _update_grid_size(self):
+        if self.position.x < self._grid_min_point.x:
+            self._grid_min_point.x = self.position.x
+        if self.position.y < self._grid_min_point.y:
+            self._grid_min_point.y = self.position.y
+        if self.position.x > self._grid_max_point.x:
+            self._grid_max_point.x = self.position.x
+        if self.position.y > self._grid_max_point.y:
+            self._grid_max_point.y = self.position.y
+
 
 def part1():
     intcomp = IntCode()
@@ -139,7 +145,7 @@ def part1():
 
     while not intcomp.halt_code_reached:
         intcomp.set_user_input([robot.current_color])
-        user_input = intcomp.diagnostic_program()
+        _ = intcomp.diagnostic_program()
         instructions = intcomp.result_history[-2:]
         robot._logger.debug(f"{robot.move_count=} {instructions=}")
 
@@ -153,9 +159,10 @@ def part1():
         robot.change_direction(new_direction)
 
         robot.move_forward(1)
-        robot.move_count+=1
+        robot.move_count += 1
         robot._logger.debug("")
     robot._logger.debug(f"{robot._grid_min_point=}")
     robot._logger.debug(f"{robot._grid_max_point=}")
     robot.print_grid()
     print(len(robot.grid))
+    print(robot.move_count)
