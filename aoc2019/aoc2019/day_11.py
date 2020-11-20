@@ -44,6 +44,8 @@ class Robot:
         self._grid_min_point = point.Point(x=0, y=0)
         self._grid_max_point = point.Point(x=0, y=0)
         self._logger.debug("")
+        self._points_painted = set()
+        self._points_visited = set()
 
     @property
     def position_string(self):
@@ -52,35 +54,36 @@ class Robot:
     @property
     def current_color(self):
         if self.position_string not in self.grid:
-            self._logger.debug(f"{self.position_string=} not in self.grid: adding with default"
-                               "values")
+            # self._logger.debug(f"{self.position_string=} not in self.grid: adding with default"
+            #                    "values")
             self.grid[self.position_string] = {'color': Color.BLACK, 'paint_count': 0}
-        self._logger.debug(f"{self.grid[self.position_string]}")
+        # self._logger.debug(f"{self.grid[self.position_string]}")
         return
 
     def paint_position(self, new_color):
         """
         Changes color of current position in grid.
         """
-        self._logger.debug(f"paint_position({new_color})")
-        self._logger.debug(f"{self.position_string=} {self.grid[self.position_string]=}")
+        self._points_painted.add(self.position_string)
+        # self._logger.debug(f"paint_position({new_color})")
+        # self._logger.debug(f"{self.position_string=} {self.grid[self.position_string]=}")
         self.grid[self.position_string]['color'] = new_color
         self.grid[self.position_string]['paint_count'] += 1
-        self._logger.debug(f"{self.position_string=} {self.grid[self.position_string]=}")
+        # self._logger.debug(f"{self.position_string=} {self.grid[self.position_string]=}")
 
     def change_direction(self, new_direction):
-        self._logger.debug(f"{self._direction}")
+        # self._logger.debug(f"{self._direction}")
         if new_direction == 0:
-            self._logger.debug("turn left")
+            # self._logger.debug("turn left")
             self._turn_left()
         else:
-            self._logger.debug("turn right")
+            # self._logger.debug("turn right")
             self._turn_right()
-        self._logger.debug(f"{self._direction}")
+        # self._logger.debug(f"{self._direction}")
 
     def move_forward(self, distance=1):
-        self._logger.debug(f"BEGIN {self.position=}")
-        self._logger.debug(f"moving forward {distance=}")
+        # self._logger.debug(f"BEGIN {self.position=}")
+        # self._logger.debug(f"moving forward {distance=}")
         if self._direction == Direction.NORTH:
             self.position.move_up(distance)
         elif self._direction == Direction.EAST:
@@ -89,7 +92,8 @@ class Robot:
             self.position.move_down(distance)
         elif self._direction == Direction.WEST:
             self.position.move_left(distance)
-        self._logger.debug(f"{self.position=}")
+        # self._logger.debug(f"{self.position=}")
+        self._points_visited.add(self.position_string)
         self._update_grid_size()
 
     def print_grid(self):
@@ -160,9 +164,12 @@ def part1():
 
         robot.move_forward(1)
         robot.move_count += 1
-        robot._logger.debug("")
+        # robot._logger.debug("")
     robot._logger.debug(f"{robot._grid_min_point=}")
     robot._logger.debug(f"{robot._grid_max_point=}")
     robot.print_grid()
     print(len(robot.grid))
-    print(robot.move_count)
+    print(f"len(robot.grid)={len(robot.grid)}")
+    print(f"{robot.move_count=}")
+    print(f"len(robot._points_painted)={len(robot._points_painted)}")
+    print(f"len(robot._points_visited)={len(robot._points_visited)}")
