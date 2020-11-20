@@ -6,6 +6,18 @@ class Point:
     x: int
     y: int
 
+    def move_left(self, distance=1):
+        self.x -= distance
+
+    def move_right(self, distance=1):
+        self.x += distance
+
+    def move_up(self, distance=1):
+        self.y += distance
+
+    def move_down(self, distance=1):
+        self.y -= distance
+
 
 def get_slope(initial_point, terminal_point):
     numerator = terminal_point.y - initial_point.y
