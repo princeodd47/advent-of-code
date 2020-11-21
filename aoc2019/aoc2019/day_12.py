@@ -17,7 +17,17 @@ class Moon:
     def __init__(self, name, x, y, z):
         self.name = name
         self.position_current = position.Position(x=x, y=y, z=z)
-        self.position_new = position.Position(x=0, y=0, z=0)
+        self.velocity = Velocity(x=0, y=0, z=0)
+
+    def _update_velocity(self, velocity):
+        self.velocity.x = velocity.x
+        self.velocity.y = velocity.y
+        self.velocity.z = velocity.z
+
+    def _apply_velocity(self):
+        self.position_current.x += self.velocity.x
+        self.position_current.y += self.velocity.y
+        self.position_current.z += self.velocity.z
 
 
 class Velocity:
@@ -34,9 +44,8 @@ class Velocity:
         self.y += incremental_velocity.y
         self.z += incremental_velocity.z
 
-
 def _calculate_gravity(current_position, compared_position):
-    print(f"calculate gravity between {current_position} and {compared_position}")
+    # print(f"calculate gravity between {current_position} and {compared_position}")
     # Ganymede x position = 3
     # Callisto x position = 5
     # Ganymede x velocty = +1 because Ganymede.x < Callisto.x
@@ -56,9 +65,9 @@ def _calculate_gravity(current_position, compared_position):
         z_velocity += -1
     else:
         z_velocity += 1
-    print(f'{x_velocity=} {y_velocity=} {z_velocity=}')
+    # print(f'{x_velocity=} {y_velocity=} {z_velocity=}')
     velocity = Velocity(x=x_velocity, y=y_velocity, z=z_velocity)
-    print('{velocity.x=}')
+    # print('{velocity.x=}')
     return velocity
 
 
@@ -70,11 +79,14 @@ def part1():
     moons.append(Moon(name="Callisto", x=7, y=-5, z=-3))
     for moon in moons:
         total_velocity = Velocity(x=0, y=0, z=0)
-        if moon.name == "Io":
-            other_moons = [m for m in moons if m.name != moon.name]
-            for other_moon in other_moons:
-                current_velocity = _calculate_gravity(moon.position_current,
-                                                      other_moon.position_current)
-                current_velocity.print()
-                total_velocity.update_velocity(current_velocity)
-                print(f'total_velocity={total_velocity.print()}')
+        other_moons = [m for m in moons if m.name != moon.name]
+        for other_moon in other_moons:
+            current_velocity = _calculate_gravity(moon.position_current,
+                                                  other_moon.position_current)
+            current_velocity.print()
+            total_velocity.update_velocity(current_velocity)
+        moon.velocity = total_velocity
+        print(f'{moon.name} velocity: {moon.velocity.print()}')
+
+    for moon in moons:
+        moon._apply_velocity()
