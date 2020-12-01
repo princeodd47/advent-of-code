@@ -4,6 +4,9 @@ version = "0.1.0"
 description = ""
 authors = ["Steven Powell <princeodd@gmail.com>"]
 
+[tool.poetry.scripts]
+d1p1 = "aoc2020.day_01:part1"
+
 [tool.poetry.dependencies]
 python = "^3.8"
 
