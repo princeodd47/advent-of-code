@@ -19,27 +19,22 @@ def part1():
 
 def part2():
     print(get_acceptable_password_count_part2("input/day_02"))
+    # answer: 727
 
 
 def get_acceptable_password_count_part1(input_file):
     acceptable_password_count = 0
     values = get_input_as_strings(input_file)
     for value in values:
-        # print(f'{value=}')
         password_obj = _format_input(value)
         if _meets_password_policy_part1(password_obj):
             acceptable_password_count += 1
-            # print(f'{acceptable_password_count=}')
     return acceptable_password_count
 
 
 def get_acceptable_password_count_part2(input_file):
     acceptable_password_count = 0
     values = get_input_as_strings(input_file)
-    # value = '17-19 p: pwpzpfbrcpppjppbmppp'
-    # logging.debug(f'{value=}')
-    # password_obj = _format_input(value)
-    # logging.debug(_meets_password_policy_part2(password_obj))
     for value in values:
         logging.debug(f'{value=}')
         password_obj = _format_input(value)
@@ -66,31 +61,18 @@ def _meets_password_policy_part1(password_obj):
 
 
 def _meets_password_policy_part2(password_obj):
-    password = password_obj.value
-    required_character = password_obj.required_character
-    position_1 = password_obj.min_count - 1
-    position_2 = password_obj.max_count - 1
-    logging.debug(f'{position_1=} {position_2=}')
-    logging.debug(len(password))
-    if len(password) >= position_1:
-        if required_character == password[position_1]:
-            criteria_1 = True
-        else:
-            criteria_1 = False
-        logging.debug(f'{password[position_1]=}')
-    else:
-        criteria_1 = False
-        logging.debug('position_1 out of range')
+    criteria_1 = _character_exists_in_position(password_obj.value,
+                                               password_obj.min_count-1,
+                                               password_obj.required_character
+                                               )
+    criteria_2 = _character_exists_in_position(password_obj.value,
+                                               password_obj.max_count-1,
+                                               password_obj.required_character
+                                               )
+    return criteria_1 is not criteria_2
 
-    if len(password) >= position_2:
-        if required_character == password[position_2]:
-            criteria_2 = True
-        else:
-            criteria_2 = False
-        logging.debug(f'{password[position_2]=}')
-    else:
-        criteria_2 = False
-        logging.debug('position_2 out of range')
-    acceptable_password = criteria_1 is not criteria_2
-    logging.debug(f'{acceptable_password=}')
-    return acceptable_password
+
+def _character_exists_in_position(password, position, character):
+    if len(password) >= position and character == password[position]:
+        return True
+    return False
