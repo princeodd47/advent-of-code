@@ -1,6 +1,6 @@
 import itertools
 
-from .common import get_input
+from common.read_file import get_input
 
 
 def part1():
