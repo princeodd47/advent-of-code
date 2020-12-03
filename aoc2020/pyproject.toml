@@ -11,6 +11,8 @@ d1p2 = "aoc2020.day_01:part2"
 d1p2bf = "aoc2020.day_01:part2_brute_force"
 d2p1 = "aoc2020.day_02:part1"
 d2p2 = "aoc2020.day_02:part2"
+d3p1 = "aoc2020.day_03:part1"
+d3p2 = "aoc2020.day_03:part2"
 
 [tool.poetry.dependencies]
 python = "^3.8"
