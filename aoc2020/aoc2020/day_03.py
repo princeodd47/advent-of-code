@@ -1,23 +1,36 @@
+import math
+
 from common.read_file import get_input_as_strings
 from common.point import Point
 
 
 def part1():
-    print(_get_tree_count('input/day_03'))
+    slopes = [(3, 1)]
+    print(_get_tree_count('input/day_03', slopes))
+    # answer: 173
 
 
-def _get_tree_count(input_file):
-    position = Point(x=0, y=0)
-    x_increment = 3
-    y_increment = 1
-    tree_count = 0
+def part2():
+    slopes = [(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)]
+    print(_get_tree_count('input/day_03', slopes))
+    # answer: 4385176320
+    # tree count per slope: [82, 173, 84, 80, 46]
+
+
+def _get_tree_count(input_file, slopes):
+    slope_tree_count = []
     grid = _create_grid_with_values(input_file)
-    while position.y < len(grid):
-        if _get_value_at_point(grid, position.x, position.y) == '#':
-            tree_count += 1
-        position.x += x_increment
-        position.y += y_increment
-    return tree_count
+    for slope in slopes:
+        position = Point(x=0, y=0)
+        tree_count = 0
+        while position.y < len(grid):
+            if _get_value_at_point(grid, position.x, position.y) == '#':
+                tree_count += 1
+            position.x += slope[0]
+            position.y += slope[1]
+        slope_tree_count.append(tree_count)
+    print(slope_tree_count)
+    return math.prod(slope_tree_count)
 
 
 def _create_grid_with_values(input_file):
