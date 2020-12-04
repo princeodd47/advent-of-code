@@ -32,19 +32,57 @@ class Passport():
                 self.cid = value
 
     def is_valid(self):
-        if (self.byr is not None
-                and self.iyr is not None
-                and self.eyr is not None
-                and self.hgt is not None
-                and self.hcl is not None
-                and self.ecl is not None
-                and self.pid is not None):
-            return True
-        return False
+        conditions = [
+            self.valid_byr(),
+            self.valid_iyr(),
+            self.valid_eyr(),
+            self.valid_hgt(),
+            self.valid_hcl(),
+            self.valid_ecl(),
+            self.valid_pid()
+        ]
+        return all(conditions)
+
+    def valid_byr(self):
+        if self.byr is None:
+            return False
+        return True
+
+    def valid_iyr(self):
+        if self.iyr is None:
+            return False
+        return True
+
+    def valid_eyr(self):
+        if self.eyr is None:
+            return False
+        return True
+
+    def valid_hgt(self):
+        if self.hgt is None:
+            return False
+        return True
+
+    def valid_hcl(self):
+        if self.hcl is None:
+            return False
+        return True
+
+    def valid_ecl(self):
+        if self.ecl is None:
+            return False
+        return True
+
+    def valid_pid(self):
+        if self.pid is None:
+            return False
+        return True
+
 
 def part1():
     optional_keys = ['cid']
     print(_get_valid_passport_count('input/day_04'))
+    # answer: 196
 
 
 def part2():
