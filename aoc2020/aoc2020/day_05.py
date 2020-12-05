@@ -38,7 +38,7 @@ def part1():
 
 
 def part2():
-    print(_get_seat_num('input/day_05_ex_2'))
+    print(_get_seat_num('input/day_05'))
 
 
 def _get_seat_num(input_file):
@@ -61,9 +61,28 @@ def _get_seat_num(input_file):
         coordinates.append((row_num, col_num))
     # print(coordinates)
     # coordinates.sort(key=lambda tup: tup[0])
-    # print(coordinates)
+    print(len(_get_missing_coordinates(coordinates)))
     return max(seat_ids)
 
 
 def _calculate_seat_id(row_num, col_num):
     return (row_num * 8) + col_num
+
+
+def _get_missing_coordinates(coordinates):
+    missing = []
+    begin = coordinates[0]
+    end = coordinates[-1]
+    print(f'{begin=} {end=}')
+    current = [begin[0], begin[1]]
+    while current[0] <= end[0]:
+        while current[1] <= 7:
+            # print(f'{current=}')
+            if (current[0], current[1]) not in coordinates:
+                missing.append(current)
+            current[1] += 1
+            # input("Press Enter to continue...")
+        current[0] += 1
+        current[1] = 0
+        # print(f'{current=}')
+    return missing
