@@ -19,6 +19,7 @@ d4p2 = "aoc2020.day_04:part2"
 [tool.poetry.dependencies]
 python = "^3.8"
 common = {path = "../common"}
+tabulate = "^0.8.7"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

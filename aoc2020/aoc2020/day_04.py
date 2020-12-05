@@ -1,5 +1,7 @@
 import re
 
+from tabulate import tabulate
+
 from common.read_file import get_input_as_strings
 
 
@@ -117,17 +119,28 @@ class Passport():
         return False
 
     def valid_pid(self):
-        if self.pid and len(self.pid) == 9 and self._pid_contains_valid_characters():
-            return True
-        return True
+        if not self.pid:
+            return False
+        conditions = [
+            len(self.pid) == 9,
+            self._pid_contains_valid_characters()
+        ]
+        return all(conditions)
 
     def _pid_contains_valid_characters(self):
         valid_characters = re.compile(r'[^0-9]')
         string = valid_characters.search(self.pid)
         return not bool(string)
 
-    def print_passport(self):
+    def print_debug(self):
         print(f'{self.byr=} {self.valid_byr()=} {self.iyr=} {self.valid_iyr()=} {self.eyr=} {self.valid_eyr()=} {self.hgt=} {self.valid_hgt()=} {self.hcl=} {self.valid_hcl()=} {self.ecl=} {self.valid_ecl()=} {self.pid=} {self.valid_pid()=}')
+
+    def print_passport(self, count):
+        # print(f'byr:{self.byr} iyr:{self.iyr} eyr:{self.eyr} hgt:{self.hgt} hcl:{self.hcl} ecl:{self.ecl} pid:{self.pid} cid:{self.cid}')
+        pid = f'{self.pid} {len(self.pid)}'
+        data = [[count, self.byr, self.iyr, self.eyr, self.hgt, self.hcl, self.ecl, pid]]
+        headers = ['#', 'byr:1920-2002', 'iyr:2010-2020', 'eyr:2020-2030', 'hgt:150-193cm/59-76in', 'hcl:# 6dig hex', 'ecl:3 char', 'pid:9 dig']
+        print(tabulate(data, headers))
 
 
 def part1():
@@ -136,7 +149,8 @@ def part1():
 
 
 def part2():
-    print(_get_valid_passport_count('input/day_04_ex_8'))
+    print(_get_valid_passport_count('input/day_04'))
+    # answer: 114
 
 
 def _get_valid_passport_count(input_file):
@@ -145,8 +159,9 @@ def _get_valid_passport_count(input_file):
     for passport in passports:
         if passport.is_valid():
             valid_passport_count += 1
-        passport.print_passport()
-        input("Press Enter to continue...")
+            # if valid_passport_count >= 27:
+            #     passport.print_passport(valid_passport_count)
+            #     input("Press Enter to continue...")
     return valid_passport_count
 
 
