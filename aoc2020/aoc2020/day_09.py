@@ -1,4 +1,5 @@
 import itertools
+import sys
 
 from common.read_file import get_input
 
@@ -8,6 +9,7 @@ class XmasCypher():
         self._group_count = group_count
         self._group = cypher_input[:group_count]
         self._cypher = cypher_input[group_count:]
+        self._cypher_input = cypher_input
 
     def print(self):
         print(f'{self._group=}')
@@ -31,14 +33,46 @@ class XmasCypher():
         self._group.append(self._cypher[0])
         self._cypher = self._cypher[1:]
 
+    def _advance_cypher_input(self):
+        self._cypher_input = self._cypher_input[1:]
+        # print(f'len={len(self._cypher_input)} begin={self._cypher_input[1:]}')
+        # input("Press Enter to continue...")
+
+    def _find_sequence(self, target_num):
+        total = 0
+        while total != target_num:
+            sequence = self._add_until_target_num(target_num)
+            total = sum(sequence)
+            # print(f'{total=}')
+            if total == target_num:
+                # print('sequence found!')
+                # print(f'{sequence=}')
+                min_plus_max = min(sequence) + max(sequence)
+                return min_plus_max
+            self._advance_cypher_input()
+        return 0
+
+    def _add_until_target_num(self, target_num):
+        # print('_add_until_target_num() called')
+        total = 0
+        sequence = []
+        for i in self._cypher_input:
+            total += i
+            sequence.append(i)
+            # print(f'{sequence=}')
+            # print(f'{total=}')
+            if total >= target_num:
+                return sequence
+
 
 def part1():
     group_count = 25
     print(_find_incorrect_number("input/day_09", group_count))
+    # answer: 85848519
 
 
 def part2():
-    print(_do_second_thing("input/day_09"))
+    print(_find_sequence("input/day_09"))
 
 
 def _find_incorrect_number(input_file, group_count):
@@ -47,9 +81,12 @@ def _find_incorrect_number(input_file, group_count):
     return bad_num
 
 
-def _do_second_thing(input_file):
-    input_content = _parse_input(input_file)
-    return len(input_content)
+def _find_sequence(input_file):
+    target_num = 85848519
+    # target_num = 127
+    cypher = XmasCypher(_parse_input(input_file), 0)
+    sequence = cypher._find_sequence(target_num)
+    return sequence
 
 
 def _parse_input(input_file):
