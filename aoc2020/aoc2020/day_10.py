@@ -1,4 +1,46 @@
-from common.read_file import get_input_as_strings
+from typing import List
+
+from .common import get_input_as_strings
+
+
+memo_path_example = '''
+
+{
+    '1':
+    [
+        2,
+        3,
+        4
+    ],
+    '2': []
+    '3': []
+    '4': []
+}
+'''
+
+# class Memo():
+#     def __init__(self, end):
+#         self.paths = []
+#         self.starts = []
+#         self.end = end
+
+#     def add_start(self, start):
+#         self.starts.append(start)
+
+#     def path_exists(self, start):
+#         return(start in self.paths)
+
+#     def get_path(self, start):
+#         return self.paths[start]
+
+class Path():
+    def __init__(self, path):
+        self.start = start
+        self.path = {path}
+
+    @property
+    def last(self):
+        return max(self.path)
 
 
 class JoltDifference():
@@ -35,10 +77,10 @@ def part1():
 
 
 def part2():
-    print(_do_second_thing("input/day_08"))
+    print(_do_second_thing("input/day_10_ex_1"))
 
 
-def _do_first_thing(input_file):
+def _do_first_thing(input_file: str):
     input_content = _parse_input(input_file)
     # print(f'{input_content=}')
     jolt_difference = JoltDifference(input_content)
@@ -47,19 +89,11 @@ def _do_first_thing(input_file):
     return differences[1] * differences[3]
 
 
-def _do_second_thing(input_file):
-    input_content = _parse_input(input_file)
-    return 0
+def _do_second_thing(input_file: str):
+    input_content: set[int] = _parse_input(input_file)
+    return input_content
 
 
-def _parse_input(input_file):
-    lines = get_input_as_strings(input_file)
-    parsed_lines = []
-    for line in lines:
-        parsed_lines.append(int(line))
-    parsed_lines.sort()
-    return parsed_lines
-
-
-def _get_jolt_difference(input_content):
-    return 0
+def _parse_input(input_file: str) -> List[int]:
+    lines: list[str] = get_input_as_strings(input_file)
+    return sorted(list(map(int, lines)))
