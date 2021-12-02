@@ -7,6 +7,8 @@ authors = ["Steven Powell <princeodd@gmail.com>"]
 [tool.poetry.scripts]
 d1p1 = "aoc2021.day_01:part1"
 d1p2 = "aoc2021.day_01:part2"
+d2p1 = "aoc2021.day_02:part1"
+d2p2 = "aoc2021.day_02:part2"
 
 [tool.poetry.dependencies]
 python = "^3.8"
