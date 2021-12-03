@@ -91,34 +91,3 @@ def _get_target(items, frequency, default):
     else:
         target = least_common[0]
     return target
-
-
-# def _get_binaries_o_c(input_values, frequency, default):
-#     good_binaries = input_values.copy()
-#     bad_binaries = []
-#     # print(f'{good_binaries=}')
-#     inverted_data = common.invert_matrix(good_binaries)
-#     # print(inverted_data)
-#     position = 0
-#     for i in inverted_data:
-#         # print(''.join(i))
-#         most_common, least_common = _get_frequent_items(i)
-#         if most_common == least_common:
-#             target = default
-#         elif frequency == "most":
-#             target = most_common
-#         else:
-#             target = least_common
-#         # print(f'{position=} {target=}')
-#         for binary in good_binaries:
-#             if len(good_binaries) > 1:
-#                 # print(f'{binary=}')
-#                 if binary[position] != target:
-#                     # print(f'removing {binary=}')
-#                     bad_binaries.append(binary)
-#         for binary in bad_binaries:
-#             good_binaries.remove(binary)
-#         bad_binaries = []
-#         position += 1
-#         print(f'{good_binaries=}')
-#     return good_binaries
