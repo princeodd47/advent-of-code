@@ -2,6 +2,7 @@ import pytest
 
 from aoc2015 import day_01
 
+
 @pytest.mark.parametrize(
     ("input_string", "expected_result"),
     [
