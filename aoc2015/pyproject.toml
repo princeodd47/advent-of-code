@@ -9,6 +9,7 @@ d1p1 = "aoc2015.day_01:part1"
 d1p2 = "aoc2015.day_01:part2"
 d2p1 = "aoc2015.day_02:part1"
 d2p2 = "aoc2015.day_02:part2"
+d3p1 = "aoc2015.day_03:part1"
 
 [tool.poetry.dependencies]
 python = "^3.8"
