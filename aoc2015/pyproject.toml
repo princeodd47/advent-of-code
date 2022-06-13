@@ -14,6 +14,7 @@ d3p2 = "aoc2015.day_03:part2"
 d4p1 = "aoc2015.day_04:part1"
 d4p2 = "aoc2015.day_04:part2"
 d5p1 = "aoc2015.day_05:part1"
+d5p2 = "aoc2015.day_05:part2"
 
 [tool.poetry.dependencies]
 python = "^3.8"

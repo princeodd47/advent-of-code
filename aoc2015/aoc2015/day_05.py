@@ -1,5 +1,7 @@
 from . import common
 
+import re
+
 
 def part1():
     strings = common.get_input_as_strings("input/day_05")
@@ -52,7 +54,8 @@ def _contains_illegal_stings(string):
 
 
 def part2():
-    strings = common.get_input_as_strings("input/day_05")
+    strings = common.get_input_as_strings("input/day_05_azzal07")
+    # strings = common.get_input_as_strings("input/day_05")
     nice_strings = []
     naughty_strings = []
     for s in strings:
@@ -60,13 +63,21 @@ def part2():
             nice_strings.append(s)
         else:
             naughty_strings.append(s)
-    print(len(nice_strings))
+    print(f"nice: {len(nice_strings)}")
+    print(f"naughty: {len(naughty_strings)}")
     # answer: 238
+
+
+def _get_classification_part2(string):
+    classification = _is_nice_part2(string)
+    if classification:
+        return "nice"
+    return "naughty"
 
 
 def _is_nice_part2(string):
     if (_contains_duplicate_string_pair_that_does_not_overlap(string)
-    and not _contains_encapsulating_character(string)):
+    and _contains_encapsulating_character(string)):
         return True
     return False
 
@@ -74,10 +85,29 @@ def _is_nice_part2(string):
 def _contains_duplicate_string_pair_that_does_not_overlap(string):
     # It contains a pair of any two letters that appears at least twice in the stringwithout overlapping,
     # like xyxy (xy) or aabcdefgaa (aa), but not like aaa (aa, but it overlaps).
-    return True
+    char_pairs = []
+    for i in range(len(string)-1):
+        char_pairs.append(string[i] + string[i+1])
+    unique_pairs = set(char_pairs)
+    has_duplicate_pairs = len(char_pairs) > len(unique_pairs)
+    has_overlapping_pairs = False
+
+    has_one_nonoverlapping_pair = False
+    for pair in unique_pairs:
+        if char_pairs.count(pair) > 1:
+            pattern_pair = pair + "\s{1,}" + pair
+            pattern = re.compile(pattern_pair)
+            matches = pattern.findall(string)
+            if len(matches) > 0:
+                has_one_nonoverlapping_pair = True
+    return has_duplicate_pairs and not has_one_nonoverlapping_pair
 
 
 def _contains_encapsulating_character(string):
     # It contains at least one letter which repeats with exactly one letter between them,
     # like xyx, abcdefeghi (efe), or even aaa.
-    return True
+    result = False
+    for i in range(len(string)-2):
+        if string[i] == string[i+2]:
+            result = True
+    return result

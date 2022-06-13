@@ -22,10 +22,16 @@ def test__get_classification_part1(input_string, expected_result):
 @pytest.mark.parametrize(
     ("input_string", "expected_result"),
     [
-        ("qjhvhtzxzqq", "nice"),
+        ("qjhvhtzxzqqjkmpb", "nice"),
         ("xxyxx", "nice"),
         ("uurcxstgmygtbstg", "naughty"),
         ("ieodomkazucvgmuy", "naughty"),
+        ("opmopgyabjjjoygt", "nice"),
+        ("sknufchjdvccccta", "nice"),
+        ("cyypypveppxxxfuq", "nice"),
+        ("aaaa", "nice"),
+        ("xyxy", "nice"),
+        ("abaaaa", "nice"),
     ]
 )
 def test__get_classification_part2(input_string, expected_result):
