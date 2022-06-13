@@ -49,3 +49,35 @@ def _contains_illegal_stings(string):
     if any(illegal_string in string for illegal_string in illegal_strings):
         return True
     return False
+
+
+def part2():
+    strings = common.get_input_as_strings("input/day_05")
+    nice_strings = []
+    naughty_strings = []
+    for s in strings:
+        if _get_classification_part2(s) == "nice":
+            nice_strings.append(s)
+        else:
+            naughty_strings.append(s)
+    print(len(nice_strings))
+    # answer: 238
+
+
+def _is_nice_part2(string):
+    if (_contains_duplicate_string_pair_that_does_not_overlap(string)
+    and not _contains_encapsulating_character(string)):
+        return True
+    return False
+
+
+def _contains_duplicate_string_pair_that_does_not_overlap(string):
+    # It contains a pair of any two letters that appears at least twice in the stringwithout overlapping,
+    # like xyxy (xy) or aabcdefgaa (aa), but not like aaa (aa, but it overlaps).
+    return True
+
+
+def _contains_encapsulating_character(string):
+    # It contains at least one letter which repeats with exactly one letter between them,
+    # like xyx, abcdefeghi (efe), or even aaa.
+    return True
