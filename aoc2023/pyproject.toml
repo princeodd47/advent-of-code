@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "aoc2023"
+version = "0.1.0"
+description = ""
+authors = ["Steven Powell <princeodd@gmail.com>"]
+
+[tool.poetry.scripts]
+d1p1 = "aoc2023.day_01:part1"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
